@@ -33,6 +33,30 @@ npm run build
 npm run lint
 ```
 
+## Regulation monitoring (US + Germany)
+This repo now includes a scheduled regulation monitor aligned to a Dexter-style ops workflow.
+
+What it does:
+- Polls configured regulator sources for US and Germany
+- Detects page-content changes via hash diffing
+- Persists run state in `.strata/regulation-monitor-state.json`
+- Writes timestamped run reports under `reports/`
+
+Run once:
+```bash
+npm run monitor:regulations:once
+```
+
+Run as daemon every 6 hours:
+```bash
+npm run monitor:regulations
+```
+
+Customize schedule:
+```bash
+REG_MONITOR_CRON="0 */4 * * *" npm run monitor:regulations
+```
+
 ## Short-term roadmap
 1. Replace seeded indicators with scheduled ingestion pipelines.
 2. Add source-level citations (OECD, IMF, World Bank, regulators) per factor.

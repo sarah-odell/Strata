@@ -1,0 +1,44 @@
+[
+  {
+    "id": "us-sec-press",
+    "country": "US",
+    "institution": "U.S. Securities and Exchange Commission",
+    "topic": "Market regulation and enforcement",
+    "url": "https://www.sec.gov/news/pressreleases"
+  },
+  {
+    "id": "us-ftc-press",
+    "country": "US",
+    "institution": "U.S. Federal Trade Commission",
+    "topic": "Competition and consumer protection",
+    "url": "https://www.ftc.gov/news-events/news/press-releases"
+  },
+  {
+    "id": "us-doj-opa",
+    "country": "US",
+    "institution": "U.S. Department of Justice",
+    "topic": "Antitrust and corporate enforcement",
+    "url": "https://www.justice.gov/opa/pr"
+  },
+  {
+    "id": "de-bafin-news",
+    "country": "DE",
+    "institution": "BaFin",
+    "topic": "Financial regulation and supervision",
+    "url": "https://www.bafin.de/SiteGlobals/Functions/EN/Presse/Pressemitteilungen/pressemitteilungen_node_en.html"
+  },
+  {
+    "id": "de-bundesbank-press",
+    "country": "DE",
+    "institution": "Deutsche Bundesbank",
+    "topic": "Monetary and financial stability updates",
+    "url": "https://www.bundesbank.de/en/press/press-releases"
+  },
+  {
+    "id": "de-bkartamt-press",
+    "country": "DE",
+    "institution": "Bundeskartellamt",
+    "topic": "Competition authority decisions",
+    "url": "https://www.bundeskartellamt.de/EN/News/news_node.html"
+  }
+]
