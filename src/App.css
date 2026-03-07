@@ -1,7 +1,7 @@
 .app-shell {
   max-width: 74rem;
   margin: 0 auto;
-  padding: 3rem 1.5rem 6.5rem;
+  padding: 3.4rem 1.65rem 7rem;
   color: var(--foreground);
   position: relative;
   z-index: 1;
@@ -92,7 +92,7 @@
 .view-switch {
   display: flex;
   gap: 0.65rem;
-  margin-top: 1.6rem;
+  margin-top: 1.9rem;
 }
 
 .view-btn {
@@ -123,15 +123,15 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1.2rem;
-  margin-top: 1.4rem;
-  padding: 1.1rem;
+  margin-top: 1.7rem;
+  padding: 1.25rem;
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 0.75rem;
   background: rgba(18, 18, 26, 0.3);
 }
 
 .scenario-toggle {
-  margin-top: 1.15rem;
+  margin-top: 1.35rem;
   display: flex;
   flex-wrap: wrap;
   gap: 0.7rem;
@@ -161,7 +161,7 @@
 }
 
 .deal-size-note {
-  margin: 0.62rem 0 0.2rem;
+  margin: 0.75rem 0 0.35rem;
   color: #949bad;
   font-size: 0.82rem;
 }
@@ -196,15 +196,15 @@ select:focus {
 }
 
 .prompt-tool {
-  margin-top: 1.45rem;
+  margin-top: 1.9rem;
   border: 1px solid var(--border);
   border-radius: 0.75rem;
   background: rgba(18, 18, 26, 0.46);
-  padding: 1.08rem;
+  padding: 1.24rem;
 }
 
 .prompt-subtitle {
-  margin: 0.35rem 0 0.9rem;
+  margin: 0.4rem 0 1.05rem;
   color: var(--muted-foreground);
 }
 
@@ -245,7 +245,7 @@ input:focus {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: 0.9rem;
+  margin-top: 1.05rem;
 }
 
 .prompt-assumptions span {
@@ -258,26 +258,26 @@ input:focus {
 }
 
 .prompt-results {
-  margin-top: 1rem;
+  margin-top: 1.2rem;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 0.8rem;
+  gap: 1rem;
 }
 
 .prompt-result-card {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 0.75rem;
-  padding: 0.8rem;
+  padding: 0.95rem;
   background: rgba(26, 26, 36, 0.65);
 }
 
 .prompt-target-note {
-  margin: 0.85rem 0 0;
+  margin: 1rem 0 0;
   color: #d3d8e4;
 }
 
 .grid-header {
-  margin-top: 2.4rem;
+  margin-top: 2.9rem;
 }
 
 .grid-header-top {
@@ -305,11 +305,11 @@ input:focus {
 }
 
 .weights-panel {
-  margin-top: 1.2rem;
+  margin-top: 1.5rem;
   border: 1px solid var(--border);
   border-radius: 0.75rem;
   background: rgba(18, 18, 26, 0.45);
-  padding: 1rem;
+  padding: 1.15rem;
 }
 
 .weights-title {
@@ -349,7 +349,7 @@ input:focus {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1.1rem;
-  margin-top: 1.3rem;
+  margin-top: 1.55rem;
 }
 
 .top-market-card {
@@ -391,12 +391,12 @@ input:focus {
 .country-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.25rem;
-  margin-top: 1.35rem;
+  gap: 1.4rem;
+  margin-top: 1.55rem;
 }
 
 .table-shell {
-  margin-top: 1.35rem;
+  margin-top: 1.55rem;
   border: 1px solid var(--border);
   border-radius: 0.75rem;
   background: rgba(18, 18, 26, 0.45);
@@ -450,7 +450,7 @@ input:focus {
 .definition-card {
   border: 1px solid var(--border);
   border-radius: 0.75rem;
-  padding: 1.14rem;
+  padding: 1.25rem;
   background: var(--card);
   backdrop-filter: blur(8px);
   box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
@@ -661,9 +661,9 @@ ul {
 }
 
 .definitions-panel {
-  margin-top: 1.45rem;
+  margin-top: 1.8rem;
   display: grid;
-  gap: 1.15rem;
+  gap: 1.35rem;
 }
 
 .definitions-panel > p {
@@ -712,7 +712,7 @@ ul {
 
 @media (max-width: 767px) {
   .app-shell {
-    padding: 1.35rem 1rem 4.5rem;
+    padding: 1.5rem 1rem 4.9rem;
   }
 
   .hero {
@@ -725,7 +725,7 @@ ul {
 
   .view-switch {
     flex-wrap: wrap;
-    margin-top: 1.2rem;
+    margin-top: 1.35rem;
   }
 
   .grid-header-top {
