@@ -126,11 +126,16 @@ function App() {
                     {strategyWeights[strategy].map((factor) => {
                       const raw = profile.factors[factor.key]
                       const directional = factor.invert ? 100 - raw : raw
+                      const quality = profile.factorDataQuality[factor.key]
 
                       return (
                         <li key={factor.key}>
                           {factorLabel(factor.key)}: {raw} (model impact: {directional}, weight{' '}
                           {(factor.weight * 100).toFixed(0)}%)
+                          <span className="factor-quality">
+                            Refreshed {quality.lastRefreshed} · Confidence{' '}
+                            {Math.round(quality.confidence * 100)}%
+                          </span>
                         </li>
                       )
                     })}

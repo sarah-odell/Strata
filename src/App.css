@@ -284,6 +284,13 @@ ul {
   color: #c3c7d4;
 }
 
+.factor-quality {
+  display: block;
+  margin-top: 0.16rem;
+  color: #8f95a7;
+  font-size: 0.79rem;
+}
+
 .summary {
   color: #d4d8e5;
 }

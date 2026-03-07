@@ -1,4 +1,8 @@
-import { indicatorFactorOverrides } from './indicatorOverrides'
+import {
+  indicatorFactorOverrides,
+  indicatorOverridesGeneratedAt,
+  liveFactorConfidence,
+} from './indicatorOverrides'
 
 export type FactorKey =
   | 'economicStrength'
@@ -24,6 +28,13 @@ export type CountryProfile = {
   lastUpdated: string
   sources: Citation[]
   factorCitations: Record<FactorKey, Citation[]>
+  factorDataQuality: Record<
+    FactorKey,
+    {
+      lastRefreshed: string
+      confidence: number
+    }
+  >
 }
 
 export const supportedSectors = [
@@ -87,7 +98,7 @@ const factorCitationsFor = (countryCode: string): Record<FactorKey, Citation[]> 
   }
 }
 
-const baseProfiles: Omit<CountryProfile, 'factorCitations' | 'sources'>[] = [
+const baseProfiles: Omit<CountryProfile, 'factorCitations' | 'sources' | 'factorDataQuality'>[] = [
   {
     code: 'US',
     name: 'United States',
@@ -220,7 +231,9 @@ const baseProfiles: Omit<CountryProfile, 'factorCitations' | 'sources'>[] = [
   },
 ]
 
-const withOverrides = (profile: Omit<CountryProfile, 'factorCitations' | 'sources'>): CountryProfile => {
+const withOverrides = (
+  profile: Omit<CountryProfile, 'factorCitations' | 'sources' | 'factorDataQuality'>,
+): CountryProfile => {
   const override = indicatorFactorOverrides[profile.code] ?? {}
   const factors: Record<FactorKey, number> = {
     ...profile.factors,
@@ -234,11 +247,35 @@ const withOverrides = (profile: Omit<CountryProfile, 'factorCitations' | 'source
     countryInstitutionLinks[profile.code],
   ]
 
+  const factorDataQuality: CountryProfile['factorDataQuality'] = {
+    economicStrength: {
+      lastRefreshed: indicatorOverridesGeneratedAt,
+      confidence: liveFactorConfidence.economicStrength ?? 0.8,
+    },
+    taxTariffFriction: {
+      lastRefreshed: indicatorOverridesGeneratedAt,
+      confidence: liveFactorConfidence.taxTariffFriction ?? 0.78,
+    },
+    regulatoryComplexity: {
+      lastRefreshed: asOfDate,
+      confidence: 0.68,
+    },
+    geopoliticalRisk: {
+      lastRefreshed: asOfDate,
+      confidence: 0.65,
+    },
+    dealExecutionRisk: {
+      lastRefreshed: asOfDate,
+      confidence: 0.67,
+    },
+  }
+
   return {
     ...profile,
     factors,
     sources,
     factorCitations: factorCitationsFor(profile.code),
+    factorDataQuality,
   }
 }
 
