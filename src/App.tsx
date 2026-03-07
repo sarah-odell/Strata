@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 import { countryProfiles, supportedSectors, type FactorKey } from './data/countries'
 import {
@@ -381,6 +381,33 @@ function App() {
       return `${point.x},${point.y}`
     })
     .join(' ')
+
+  useEffect(() => {
+    if (strategy !== promptAssumptions.strategy) {
+      setStrategy(promptAssumptions.strategy)
+    }
+
+    if (sector !== promptAssumptions.sector) {
+      setSector(promptAssumptions.sector)
+    }
+
+    if (scenarioCase !== promptAssumptions.scenarioCase) {
+      setScenarioCase(promptAssumptions.scenarioCase)
+    }
+
+    if (dealSize !== promptAssumptions.dealSize) {
+      setDealSize(promptAssumptions.dealSize)
+    }
+  }, [
+    dealSize,
+    promptAssumptions.dealSize,
+    promptAssumptions.scenarioCase,
+    promptAssumptions.sector,
+    promptAssumptions.strategy,
+    scenarioCase,
+    sector,
+    strategy,
+  ])
 
   return (
     <main className="app-shell">
