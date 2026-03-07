@@ -950,6 +950,29 @@ function App() {
               })}
             </section>
           ) : (
+            <>
+              {selectedTableProfile ? (
+                <section className="table-focus-panel">
+                  <div className="table-focus-header">
+                    <div>
+                      <p className="top-rank">Selected market</p>
+                      <h4>{selectedTableProfile.name}</h4>
+                      <p className="region">{selectedTableProfile.region}</p>
+                    </div>
+                    <div className="score-stack">
+                      <p className="score">{selectedTableProfile.scenarioScore}</p>
+                      <p className={badgeClass(selectedTableProfile.scenarioRecommendation)}>
+                        {selectedTableProfile.scenarioRecommendation}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="summary">{selectedTableProfile.notes}</p>
+                  <p className="meta">
+                    Strongest modeled factors: {topStrengths(selectedTableProfile, strategy).join(' + ')}
+                  </p>
+                </section>
+              ) : null}
+
             <section className="table-shell">
               <table className="country-table">
                 <thead>
@@ -1009,29 +1032,8 @@ function App() {
                 </tbody>
               </table>
             </section>
+            </>
           )}
-
-          {rankingView === 'table' && selectedTableProfile ? (
-            <section className="table-focus-panel">
-              <div className="table-focus-header">
-                <div>
-                  <p className="top-rank">Selected market</p>
-                  <h4>{selectedTableProfile.name}</h4>
-                  <p className="region">{selectedTableProfile.region}</p>
-                </div>
-                <div className="score-stack">
-                  <p className="score">{selectedTableProfile.scenarioScore}</p>
-                  <p className={badgeClass(selectedTableProfile.scenarioRecommendation)}>
-                    {selectedTableProfile.scenarioRecommendation}
-                  </p>
-                </div>
-              </div>
-              <p className="summary">{selectedTableProfile.notes}</p>
-              <p className="meta">
-                Strongest modeled factors: {topStrengths(selectedTableProfile, strategy).join(' + ')}
-              </p>
-            </section>
-          ) : null}
 
           <section className="weights-panel">
             <p className="weights-title">Factor Weights — {strategy}</p>
