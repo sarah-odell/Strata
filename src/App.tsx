@@ -935,7 +935,7 @@ function App() {
                 placeholder="I am a $2B fund evaluating expansion options in Germany for aerospace & defense. Where should we prioritize?"
               />
             </label>
-            <label>
+            <label className="fund-size-label">
               Fund size (USD millions)
               <input
                 type="text"

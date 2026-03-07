@@ -138,6 +138,10 @@ label {
   color: var(--text-tertiary);
 }
 
+.fund-size-label {
+  margin-top: 0.6rem;
+}
+
 select,
 textarea,
 input {
