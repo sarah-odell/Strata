@@ -21,11 +21,17 @@ const countries = {
 }
 
 const wbIndicators = {
+  gdpCurrentUsd: 'NY.GDP.MKTP.CD',
+  population: 'SP.POP.TOTL',
   gdpGrowth: 'NY.GDP.PCAP.KD.ZG',
+  gdpTotalGrowth: 'NY.GDP.MKTP.KD.ZG',
   inflation: 'FP.CPI.TOTL.ZG',
   fdi: 'BX.KLT.DINV.WD.GD.ZS',
   tariff: 'TM.TAX.MRCH.SM.AR.ZS',
   tradeOpen: 'NE.TRD.GNFS.ZS',
+  privateCredit: 'FD.AST.PRVT.GD.ZS',
+  bankConcentration3: 'GFDD.OI.01',
+  bankConcentration5: 'GFDD.OI.06',
 }
 
 const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, value))
@@ -77,6 +83,41 @@ const scoreTariffRate = (tariffRate) => {
   return 95
 }
 
+const scoreNominalGdp = (gdpUsd) => {
+  // Log scale: $10B is very small; $10T+ is very deep.
+  const logValue = Math.log10(Math.max(gdpUsd, 1))
+  return clamp(((logValue - 10) / 4) * 100)
+}
+
+const scorePopulation = (population) => {
+  // Log scale: 1M to 1B resident market.
+  const logValue = Math.log10(Math.max(population, 1))
+  return clamp(((logValue - 6) / 3) * 100)
+}
+
+const scorePrivateCreditDepth = (creditPctGdp) => {
+  if (creditPctGdp <= 20) return 20
+  if (creditPctGdp <= 60) return clamp(20 + (creditPctGdp - 20) * 1.1)
+  if (creditPctGdp <= 120) return clamp(64 + (creditPctGdp - 60) * 0.45)
+  if (creditPctGdp <= 220) return clamp(91 + (creditPctGdp - 120) * 0.07)
+  return 98
+}
+
+const scoreGrowthMomentum = (gdpGrowth, gdpPerCapitaGrowth, fdiPctGdp) => {
+  const headlineGrowth = scoreGdpGrowth(gdpGrowth)
+  const perCapitaGrowth = scoreGdpGrowth(gdpPerCapitaGrowth)
+  const fdiFlow = scoreFdi(fdiPctGdp)
+  return Math.round(clamp(headlineGrowth * 0.45 + perCapitaGrowth * 0.35 + fdiFlow * 0.2))
+}
+
+const scoreBankConcentrationRisk = (concentration) => {
+  if (concentration <= 30) return clamp(20 + concentration * 0.6)
+  if (concentration <= 50) return clamp(38 + (concentration - 30) * 1.1)
+  if (concentration <= 70) return clamp(60 + (concentration - 50) * 0.9)
+  if (concentration <= 90) return clamp(78 + (concentration - 70) * 0.7)
+  return clamp(92 + (concentration - 90) * 0.3)
+}
+
 const latestValue = (rows) => {
   const point = rows.find((row) => row.value !== null && row.value !== undefined)
   return point?.value ?? null
@@ -124,12 +165,30 @@ const collectIndicatorValues = async () => {
   const imfGrowthMap = await fetchImfGrowth()
   const entries = await Promise.all(
     Object.entries(countries).map(async ([code, iso3]) => {
-      const [gdpGrowth, inflation, fdi, tariff, tradeOpen] = await Promise.all([
+      const [
+        gdpCurrentUsd,
+        population,
+        gdpGrowth,
+        gdpTotalGrowth,
+        inflation,
+        fdi,
+        tariff,
+        tradeOpen,
+        privateCredit,
+        bankConcentration3,
+        bankConcentration5,
+      ] = await Promise.all([
+        fetchWbSeries(iso3, wbIndicators.gdpCurrentUsd),
+        fetchWbSeries(iso3, wbIndicators.population),
         fetchWbSeries(iso3, wbIndicators.gdpGrowth),
+        fetchWbSeries(iso3, wbIndicators.gdpTotalGrowth),
         fetchWbSeries(iso3, wbIndicators.inflation),
         fetchWbSeries(iso3, wbIndicators.fdi),
         fetchWbSeries(iso3, wbIndicators.tariff),
         fetchWbSeries(iso3, wbIndicators.tradeOpen),
+        fetchWbSeries(iso3, wbIndicators.privateCredit),
+        fetchWbSeries(iso3, wbIndicators.bankConcentration3),
+        fetchWbSeries(iso3, wbIndicators.bankConcentration5),
       ])
 
       const imfCountry = imfGrowthMap[iso3] || imfGrowthMap[code]
@@ -139,11 +198,17 @@ const collectIndicatorValues = async () => {
       return {
         code,
         iso3,
-        gdpGrowth: Number(gdpGrowth ?? imfGrowth ?? 0),
+        gdpCurrentUsd: Number(gdpCurrentUsd ?? 0),
+        population: Number(population ?? 0),
+        gdpGrowthPerCapita: Number(gdpGrowth ?? imfGrowth ?? 0),
+        gdpGrowthTotal: Number(gdpTotalGrowth ?? imfGrowth ?? 0),
         inflation: Number(inflation ?? 0),
         fdi: Number(fdi ?? 0),
         tariff: Number(tariff ?? 0),
         tradeOpen: Number(tradeOpen ?? 0),
+        privateCredit: Number(privateCredit ?? 0),
+        bankConcentration3: Number(bankConcentration3 ?? 65),
+        bankConcentration5: Number(bankConcentration5 ?? 75),
       }
     }),
   )
@@ -155,7 +220,7 @@ const computeOverrides = (rows) => {
   const overrides = {}
 
   for (const row of rows) {
-    const growthScore = scoreGdpGrowth(row.gdpGrowth)
+    const growthScore = scoreGdpGrowth(row.gdpGrowthPerCapita)
     const fdiScore = scoreFdi(row.fdi)
     const tradeScore = scoreTradeOpenness(row.tradeOpen)
     const inflationScore = scoreInflation(row.inflation)
@@ -164,12 +229,29 @@ const computeOverrides = (rows) => {
       growthScore * 0.34 + fdiScore * 0.24 + tradeScore * 0.2 + inflationScore * 0.22,
     )
 
+    const marketSizeDepth = Math.round(
+      clamp(
+        scoreNominalGdp(row.gdpCurrentUsd) * 0.55 +
+          scorePopulation(row.population) * 0.25 +
+          scorePrivateCreditDepth(row.privateCredit) * 0.2,
+      ),
+    )
+
+    const marketGrowthMomentum = scoreGrowthMomentum(row.gdpGrowthTotal, row.gdpGrowthPerCapita, row.fdi)
+
+    const concentration3 = scoreBankConcentrationRisk(row.bankConcentration3)
+    const concentration5 = scoreBankConcentrationRisk(row.bankConcentration5)
+    const marketConcentrationRisk = Math.round(clamp(concentration3 * 0.6 + concentration5 * 0.4))
+
     const tariffFriction = scoreTariffRate(row.tariff)
     const taxTariffFriction = Math.round(clamp(tariffFriction * 0.65 + (100 - tradeScore) * 0.35))
 
     overrides[row.code] = {
       economicStrength,
       taxTariffFriction,
+      marketSizeDepth,
+      marketGrowthMomentum,
+      marketConcentrationRisk,
     }
   }
 
@@ -177,7 +259,7 @@ const computeOverrides = (rows) => {
 }
 
 const writeOverridesFile = async (overrides) => {
-  const output = `import type { FactorKey } from './countries'\n\nexport type FactorOverrides = Record<string, Partial<Record<FactorKey, number>>>\n\n// Generated by ingestion/update-indicators.mjs on ${runDate}\nexport const indicatorOverridesGeneratedAt = '${runDate}'\n\nexport const liveFactorConfidence: Partial<Record<FactorKey, number>> = {\n  economicStrength: 0.82,\n  taxTariffFriction: 0.8,\n}\n\nexport const indicatorFactorOverrides: FactorOverrides = ${JSON.stringify(overrides, null, 2)}\n`
+  const output = `import type { FactorKey } from './countries'\n\nexport type FactorOverrides = Record<string, Partial<Record<FactorKey, number>>>\n\n// Generated by ingestion/update-indicators.mjs on ${runDate}\nexport const indicatorOverridesGeneratedAt = '${runDate}'\n\nexport const liveFactorConfidence: Partial<Record<FactorKey, number>> = {\n  economicStrength: 0.82,\n  taxTariffFriction: 0.8,\n  marketSizeDepth: 0.85,\n  marketGrowthMomentum: 0.83,\n  marketConcentrationRisk: 0.8,\n}\n\nexport const indicatorFactorOverrides: FactorOverrides = ${JSON.stringify(overrides, null, 2)}\n`
   await writeFile(outputPath, output, 'utf-8')
 }
 

@@ -31,25 +31,34 @@ type RecommendationThreshold = {
 
 export const strategyWeights: Record<Strategy, FactorWeight[]> = {
   Buyout: [
-    { key: 'economicStrength', weight: 0.3, invert: false },
-    { key: 'regulatoryComplexity', weight: 0.18, invert: true },
-    { key: 'taxTariffFriction', weight: 0.16, invert: true },
-    { key: 'geopoliticalRisk', weight: 0.2, invert: true },
-    { key: 'dealExecutionRisk', weight: 0.16, invert: true },
+    { key: 'economicStrength', weight: 0.22, invert: false },
+    { key: 'regulatoryComplexity', weight: 0.12, invert: true },
+    { key: 'taxTariffFriction', weight: 0.1, invert: true },
+    { key: 'geopoliticalRisk', weight: 0.14, invert: true },
+    { key: 'dealExecutionRisk', weight: 0.12, invert: true },
+    { key: 'marketSizeDepth', weight: 0.14, invert: false },
+    { key: 'marketGrowthMomentum', weight: 0.08, invert: false },
+    { key: 'marketConcentrationRisk', weight: 0.08, invert: true },
   ],
   Growth: [
-    { key: 'economicStrength', weight: 0.32, invert: false },
-    { key: 'regulatoryComplexity', weight: 0.18, invert: true },
-    { key: 'taxTariffFriction', weight: 0.16, invert: true },
-    { key: 'geopoliticalRisk', weight: 0.18, invert: true },
-    { key: 'dealExecutionRisk', weight: 0.16, invert: true },
+    { key: 'economicStrength', weight: 0.2, invert: false },
+    { key: 'regulatoryComplexity', weight: 0.1, invert: true },
+    { key: 'taxTariffFriction', weight: 0.08, invert: true },
+    { key: 'geopoliticalRisk', weight: 0.1, invert: true },
+    { key: 'dealExecutionRisk', weight: 0.1, invert: true },
+    { key: 'marketSizeDepth', weight: 0.16, invert: false },
+    { key: 'marketGrowthMomentum', weight: 0.18, invert: false },
+    { key: 'marketConcentrationRisk', weight: 0.08, invert: true },
   ],
   'Low-Risk Entry': [
-    { key: 'economicStrength', weight: 0.22, invert: false },
-    { key: 'regulatoryComplexity', weight: 0.22, invert: true },
-    { key: 'taxTariffFriction', weight: 0.18, invert: true },
-    { key: 'geopoliticalRisk', weight: 0.24, invert: true },
-    { key: 'dealExecutionRisk', weight: 0.14, invert: true },
+    { key: 'economicStrength', weight: 0.16, invert: false },
+    { key: 'regulatoryComplexity', weight: 0.16, invert: true },
+    { key: 'taxTariffFriction', weight: 0.12, invert: true },
+    { key: 'geopoliticalRisk', weight: 0.16, invert: true },
+    { key: 'dealExecutionRisk', weight: 0.12, invert: true },
+    { key: 'marketSizeDepth', weight: 0.12, invert: false },
+    { key: 'marketGrowthMomentum', weight: 0.06, invert: false },
+    { key: 'marketConcentrationRisk', weight: 0.1, invert: true },
   ],
 }
 
@@ -115,9 +124,10 @@ const dealSizeAdjustment = (profile: CountryProfile, dealSize: DealSize): number
   }
 
   const scaleScore =
-    profile.factors.economicStrength * 0.55 +
+    profile.factors.marketSizeDepth * 0.45 +
+    profile.factors.economicStrength * 0.3 +
     (100 - profile.factors.geopoliticalRisk) * 0.25 +
-    (100 - profile.factors.taxTariffFriction) * 0.2
+    (100 - profile.factors.taxTariffFriction) * 0.1
 
   return Math.round(clamp((scaleScore - 50) / 8, -6, 6))
 }
@@ -237,6 +247,9 @@ export const scoreCountry = (
       taxTariffFriction: -5,
       geopoliticalRisk: -6,
       dealExecutionRisk: -3,
+      marketSizeDepth: 2,
+      marketGrowthMomentum: 7,
+      marketConcentrationRisk: -3,
     },
     bear: {
       economicStrength: -10,
@@ -244,6 +257,9 @@ export const scoreCountry = (
       taxTariffFriction: 8,
       geopoliticalRisk: 10,
       dealExecutionRisk: 5,
+      marketSizeDepth: -3,
+      marketGrowthMomentum: -9,
+      marketConcentrationRisk: 5,
     },
   }
   const computeScenario = (sc: ScenarioCase): number => {

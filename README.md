@@ -85,9 +85,28 @@ Factors:
 - Tax/tariff friction
 - Geopolitical risk
 - Deal execution risk
+- Market size & depth
+- Market growth momentum
+- Market concentration risk
 - Portfolio adjacency overlay (0 to +8 points)
 
 Recommendation bands are strategy-specific (`Very strong`, `Strong`, `Moderate`, `Weak`, `Very weak`).
+
+## IC-Grade Data Sources
+Strata’s core market factor ingestion uses primary institutional datasets:
+- International Monetary Fund (IMF) DataMapper / IFS-backed series
+- World Bank World Development Indicators (WDI) API
+- World Bank Global Financial Development Database (GFDD), including banking concentration metrics
+- OECD National Accounts and related reference series surfaced through WDI metadata
+
+Key indicators used for the added market-structure factors:
+- `Market size & depth`: `NY.GDP.MKTP.CD`, `SP.POP.TOTL`, `FD.AST.PRVT.GD.ZS`
+- `Market growth momentum`: `NY.GDP.MKTP.KD.ZG`, `NY.GDP.PCAP.KD.ZG`, `BX.KLT.DINV.WD.GD.ZS`
+- `Market concentration risk`: `GFDD.OI.01`, `GFDD.OI.06`
+
+Data transform and scoring logic live in:
+- `ingestion/update-indicators.mjs`
+- `src/data/indicatorOverrides.ts` (generated output snapshot)
 
 ## Tech stack
 - React + TypeScript + Vite

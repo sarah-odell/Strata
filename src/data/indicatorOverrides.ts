@@ -8,219 +8,381 @@ export const indicatorOverridesGeneratedAt = '2026-03-07'
 export const liveFactorConfidence: Partial<Record<FactorKey, number>> = {
   economicStrength: 0.82,
   taxTariffFriction: 0.8,
+  marketSizeDepth: 0.85,
+  marketGrowthMomentum: 0.83,
+  marketConcentrationRisk: 0.8,
 }
 
 export const indicatorFactorOverrides: FactorOverrides = {
   "US": {
     "economicStrength": 51,
-    "taxTariffFriction": 46
+    "taxTariffFriction": 46,
+    "marketSizeDepth": 79,
+    "marketGrowthMomentum": 57,
+    "marketConcentrationRisk": 52
   },
   "DE": {
     "economicStrength": 46,
-    "taxTariffFriction": 26
+    "taxTariffFriction": 26,
+    "marketSizeDepth": 67,
+    "marketGrowthMomentum": 17,
+    "marketConcentrationRisk": 88
   },
   "SG": {
     "economicStrength": 83,
-    "taxTariffFriction": 7
+    "taxTariffFriction": 7,
+    "marketSizeDepth": 49,
+    "marketGrowthMomentum": 76,
+    "marketConcentrationRisk": 88
   },
   "CA": {
     "economicStrength": 48,
-    "taxTariffFriction": 28
+    "taxTariffFriction": 28,
+    "marketSizeDepth": 64,
+    "marketGrowthMomentum": 38,
+    "marketConcentrationRisk": 77
   },
   "AE": {
     "economicStrength": 63,
-    "taxTariffFriction": 30
+    "taxTariffFriction": 30,
+    "marketSizeDepth": 46,
+    "marketGrowthMomentum": 56,
+    "marketConcentrationRisk": 84
   },
   "GB": {
     "economicStrength": 40,
-    "taxTariffFriction": 24
+    "taxTariffFriction": 24,
+    "marketSizeDepth": 68,
+    "marketGrowthMomentum": 32,
+    "marketConcentrationRisk": 59
   },
   "FR": {
     "economicStrength": 58,
-    "taxTariffFriction": 28
+    "taxTariffFriction": 28,
+    "marketSizeDepth": 66,
+    "marketGrowthMomentum": 45,
+    "marketConcentrationRisk": 78
   },
   "NL": {
     "economicStrength": 47,
-    "taxTariffFriction": 19
+    "taxTariffFriction": 19,
+    "marketSizeDepth": 54,
+    "marketGrowthMomentum": 33,
+    "marketConcentrationRisk": 92
   },
   "JP": {
     "economicStrength": 47,
-    "taxTariffFriction": 33
+    "taxTariffFriction": 33,
+    "marketSizeDepth": 72,
+    "marketGrowthMomentum": 30,
+    "marketConcentrationRisk": 62
   },
   "AU": {
     "economicStrength": 46,
-    "taxTariffFriction": 33
+    "taxTariffFriction": 33,
+    "marketSizeDepth": 61,
+    "marketGrowthMomentum": 39,
+    "marketConcentrationRisk": 83
   },
   "IN": {
     "economicStrength": 60,
-    "taxTariffFriction": 76
+    "taxTariffFriction": 76,
+    "marketSizeDepth": 71,
+    "marketGrowthMomentum": 78,
+    "marketConcentrationRisk": 55
   },
   "BR": {
     "economicStrength": 61,
-    "taxTariffFriction": 82
+    "taxTariffFriction": 82,
+    "marketSizeDepth": 66,
+    "marketGrowthMomentum": 70,
+    "marketConcentrationRisk": 81
   },
   "MX": {
     "economicStrength": 52,
-    "taxTariffFriction": 32
+    "taxTariffFriction": 32,
+    "marketSizeDepth": 54,
+    "marketGrowthMomentum": 46,
+    "marketConcentrationRisk": 66
   },
   "ES": {
     "economicStrength": 66,
-    "taxTariffFriction": 28
+    "taxTariffFriction": 28,
+    "marketSizeDepth": 59,
+    "marketGrowthMomentum": 66,
+    "marketConcentrationRisk": 83
   },
   "IT": {
     "economicStrength": 52,
-    "taxTariffFriction": 29
+    "taxTariffFriction": 29,
+    "marketSizeDepth": 60,
+    "marketGrowthMomentum": 39,
+    "marketConcentrationRisk": 75
   },
   "KR": {
     "economicStrength": 61,
-    "taxTariffFriction": 48
+    "taxTariffFriction": 48,
+    "marketSizeDepth": 64,
+    "marketGrowthMomentum": 52,
+    "marketConcentrationRisk": 76
   },
   "SA": {
     "economicStrength": 42,
-    "taxTariffFriction": 55
+    "taxTariffFriction": 55,
+    "marketSizeDepth": 52,
+    "marketGrowthMomentum": 36,
+    "marketConcentrationRisk": 85
   },
   "SE": {
     "economicStrength": 65,
-    "taxTariffFriction": 21
+    "taxTariffFriction": 21,
+    "marketSizeDepth": 51,
+    "marketGrowthMomentum": 46,
+    "marketConcentrationRisk": 92
   },
   "PL": {
     "economicStrength": 69,
-    "taxTariffFriction": 21
+    "taxTariffFriction": 21,
+    "marketSizeDepth": 47,
+    "marketGrowthMomentum": 68,
+    "marketConcentrationRisk": 68
   },
   "ID": {
     "economicStrength": 66,
-    "taxTariffFriction": 58
+    "taxTariffFriction": 58,
+    "marketSizeDepth": 57,
+    "marketGrowthMomentum": 74,
+    "marketConcentrationRisk": 58
   },
   "CH": {
     "economicStrength": 41,
-    "taxTariffFriction": 28
+    "taxTariffFriction": 28,
+    "marketSizeDepth": 54,
+    "marketGrowthMomentum": 27,
+    "marketConcentrationRisk": 80
   },
   "DK": {
     "economicStrength": 78,
-    "taxTariffFriction": 20
+    "taxTariffFriction": 20,
+    "marketSizeDepth": 47,
+    "marketGrowthMomentum": 72,
+    "marketConcentrationRisk": 89
   },
   "NO": {
     "economicStrength": 61,
-    "taxTariffFriction": 29
+    "taxTariffFriction": 29,
+    "marketSizeDepth": 47,
+    "marketGrowthMomentum": 54,
+    "marketConcentrationRisk": 93
   },
   "FI": {
     "economicStrength": 53,
-    "taxTariffFriction": 25
+    "taxTariffFriction": 25,
+    "marketSizeDepth": 42,
+    "marketGrowthMomentum": 32,
+    "marketConcentrationRisk": 93
   },
   "IE": {
     "economicStrength": 62,
-    "taxTariffFriction": 16
+    "taxTariffFriction": 16,
+    "marketSizeDepth": 35,
+    "marketGrowthMomentum": 51,
+    "marketConcentrationRisk": 84
   },
   "AT": {
     "economicStrength": 51,
-    "taxTariffFriction": 21
+    "taxTariffFriction": 21,
+    "marketSizeDepth": 47,
+    "marketGrowthMomentum": 20,
+    "marketConcentrationRisk": 79
   },
   "BE": {
     "economicStrength": 47,
-    "taxTariffFriction": 18
+    "taxTariffFriction": 18,
+    "marketSizeDepth": 47,
+    "marketGrowthMomentum": 32,
+    "marketConcentrationRisk": 82
   },
   "CZ": {
     "economicStrength": 67,
-    "taxTariffFriction": 20
+    "taxTariffFriction": 20,
+    "marketSizeDepth": 40,
+    "marketGrowthMomentum": 50,
+    "marketConcentrationRisk": 76
   },
   "PT": {
     "economicStrength": 68,
-    "taxTariffFriction": 24
+    "taxTariffFriction": 24,
+    "marketSizeDepth": 43,
+    "marketGrowthMomentum": 57,
+    "marketConcentrationRisk": 84
   },
   "GR": {
     "economicStrength": 67,
-    "taxTariffFriction": 24
+    "taxTariffFriction": 24,
+    "marketSizeDepth": 38,
+    "marketGrowthMomentum": 58,
+    "marketConcentrationRisk": 93
   },
   "HU": {
     "economicStrength": 48,
-    "taxTariffFriction": 19
+    "taxTariffFriction": 19,
+    "marketSizeDepth": 33,
+    "marketGrowthMomentum": 31,
+    "marketConcentrationRisk": 76
   },
   "TR": {
     "economicStrength": 41,
-    "taxTariffFriction": 62
+    "taxTariffFriction": 62,
+    "marketSizeDepth": 53,
+    "marketGrowthMomentum": 64,
+    "marketConcentrationRisk": 64
   },
   "RO": {
     "economicStrength": 52,
-    "taxTariffFriction": 26
+    "taxTariffFriction": 26,
+    "marketSizeDepth": 37,
+    "marketGrowthMomentum": 45,
+    "marketConcentrationRisk": 81
   },
   "CN": {
     "economicStrength": 57,
-    "taxTariffFriction": 58
+    "taxTariffFriction": 58,
+    "marketSizeDepth": 89,
+    "marketGrowthMomentum": 72,
+    "marketConcentrationRisk": 54
   },
   "HK": {
     "economicStrength": 84,
-    "taxTariffFriction": 7
+    "taxTariffFriction": 7,
+    "marketSizeDepth": 49,
+    "marketGrowthMomentum": 71,
+    "marketConcentrationRisk": 75
   },
   "TW": {
     "economicStrength": 42,
-    "taxTariffFriction": 33
+    "taxTariffFriction": 33,
+    "marketSizeDepth": 4,
+    "marketGrowthMomentum": 50,
+    "marketConcentrationRisk": 40
   },
   "VN": {
     "economicStrength": 83,
-    "taxTariffFriction": 29
+    "taxTariffFriction": 29,
+    "marketSizeDepth": 58,
+    "marketGrowthMomentum": 89,
+    "marketConcentrationRisk": 51
   },
   "TH": {
     "economicStrength": 72,
-    "taxTariffFriction": 54
+    "taxTariffFriction": 54,
+    "marketSizeDepth": 57,
+    "marketGrowthMomentum": 63,
+    "marketConcentrationRisk": 63
   },
   "PH": {
     "economicStrength": 70,
-    "taxTariffFriction": 42
+    "taxTariffFriction": 42,
+    "marketSizeDepth": 51,
+    "marketGrowthMomentum": 79,
+    "marketConcentrationRisk": 67
   },
   "MY": {
     "economicStrength": 79,
-    "taxTariffFriction": 41
+    "taxTariffFriction": 41,
+    "marketSizeDepth": 53,
+    "marketGrowthMomentum": 78,
+    "marketConcentrationRisk": 69
   },
   "NZ": {
     "economicStrength": 40,
-    "taxTariffFriction": 34
+    "taxTariffFriction": 34,
+    "marketSizeDepth": 44,
+    "marketGrowthMomentum": 32,
+    "marketConcentrationRisk": 76
   },
   "IL": {
     "economicStrength": 47,
-    "taxTariffFriction": 39
+    "taxTariffFriction": 39,
+    "marketSizeDepth": 46,
+    "marketGrowthMomentum": 49,
+    "marketConcentrationRisk": 87
   },
   "QA": {
     "economicStrength": 41,
-    "taxTariffFriction": 35
+    "taxTariffFriction": 35,
+    "marketSizeDepth": 40,
+    "marketGrowthMomentum": 33,
+    "marketConcentrationRisk": 94
   },
   "ZA": {
     "economicStrength": 37,
-    "taxTariffFriction": 60
+    "taxTariffFriction": 60,
+    "marketSizeDepth": 49,
+    "marketGrowthMomentum": 26,
+    "marketConcentrationRisk": 89
   },
   "NG": {
     "economicStrength": 30,
-    "taxTariffFriction": 84
+    "taxTariffFriction": 84,
+    "marketSizeDepth": 43,
+    "marketGrowthMomentum": 60,
+    "marketConcentrationRisk": 73
   },
   "EG": {
     "economicStrength": 41,
-    "taxTariffFriction": 81
+    "taxTariffFriction": 81,
+    "marketSizeDepth": 45,
+    "marketGrowthMomentum": 59,
+    "marketConcentrationRisk": 84
   },
   "KE": {
     "economicStrength": 51,
-    "taxTariffFriction": 82
+    "taxTariffFriction": 82,
+    "marketSizeDepth": 33,
+    "marketGrowthMomentum": 65,
+    "marketConcentrationRisk": 60
   },
   "MA": {
     "economicStrength": 65,
-    "taxTariffFriction": 46
+    "taxTariffFriction": 46,
+    "marketSizeDepth": 41,
+    "marketGrowthMomentum": 65,
+    "marketConcentrationRisk": 80
   },
   "CL": {
     "economicStrength": 63,
-    "taxTariffFriction": 23
+    "taxTariffFriction": 23,
+    "marketSizeDepth": 46,
+    "marketGrowthMomentum": 64,
+    "marketConcentrationRisk": 71
   },
   "CO": {
     "economicStrength": 45,
-    "taxTariffFriction": 47
+    "taxTariffFriction": 47,
+    "marketSizeDepth": 45,
+    "marketGrowthMomentum": 48,
+    "marketConcentrationRisk": 85
   },
   "AR": {
     "economicStrength": 18,
-    "taxTariffFriction": 83
+    "taxTariffFriction": 83,
+    "marketSizeDepth": 43,
+    "marketGrowthMomentum": 16,
+    "marketConcentrationRisk": 68
   },
   "PE": {
     "economicStrength": 63,
-    "taxTariffFriction": 26
+    "taxTariffFriction": 26,
+    "marketSizeDepth": 43,
+    "marketGrowthMomentum": 64,
+    "marketConcentrationRisk": 83
   },
   "CR": {
     "economicStrength": 72,
-    "taxTariffFriction": 32
+    "taxTariffFriction": 32,
+    "marketSizeDepth": 30,
+    "marketGrowthMomentum": 78,
+    "marketConcentrationRisk": 72
   }
 }

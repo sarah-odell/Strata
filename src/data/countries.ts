@@ -10,6 +10,9 @@ export type FactorKey =
   | 'taxTariffFriction'
   | 'geopoliticalRisk'
   | 'dealExecutionRisk'
+  | 'marketSizeDepth'
+  | 'marketGrowthMomentum'
+  | 'marketConcentrationRisk'
 
 export type Citation = {
   label: string
@@ -60,6 +63,25 @@ const globalSources = {
   imf: { label: 'IMF DataMapper', url: 'https://www.imf.org/external/datamapper/' },
   wb: { label: 'World Bank Data API', url: 'https://datahelpdesk.worldbank.org/knowledgebase/topics/125589' },
   oecd: { label: 'OECD Data', url: 'https://data.oecd.org/' },
+  wbGdp: { label: 'World Bank GDP (current US$)', url: 'https://data.worldbank.org/indicator/NY.GDP.MKTP.CD' },
+  wbPopulation: { label: 'World Bank Population, total', url: 'https://data.worldbank.org/indicator/SP.POP.TOTL' },
+  wbPrivateCredit: {
+    label: 'World Bank Domestic credit to private sector by banks (% of GDP)',
+    url: 'https://data.worldbank.org/indicator/FD.AST.PRVT.GD.ZS',
+  },
+  wbGdpGrowth: { label: 'World Bank GDP growth (annual %)', url: 'https://data.worldbank.org/indicator/NY.GDP.MKTP.KD.ZG' },
+  wbGdpPerCapitaGrowth: {
+    label: 'World Bank GDP per capita growth (annual %)',
+    url: 'https://data.worldbank.org/indicator/NY.GDP.PCAP.KD.ZG',
+  },
+  wbBankConcentration: {
+    label: 'World Bank Bank concentration (%)',
+    url: 'https://data.worldbank.org/indicator/GFDD.OI.01',
+  },
+  wbFiveBankConcentration: {
+    label: 'World Bank 5-bank asset concentration',
+    url: 'https://data.worldbank.org/indicator/GFDD.OI.06',
+  },
 }
 
 const countryInstitutionLinks: Record<string, Citation> = {
@@ -145,10 +167,29 @@ const factorCitationsFor = (countryCode: string): Record<FactorKey, Citation[]> 
       countryInstitution,
     ],
     dealExecutionRisk: [countryInstitution, mkCitation(globalSources.oecd.label, globalSources.oecd.url)],
+    marketSizeDepth: [
+      mkCitation(globalSources.wbGdp.label, globalSources.wbGdp.url),
+      mkCitation(globalSources.wbPopulation.label, globalSources.wbPopulation.url),
+      mkCitation(globalSources.wbPrivateCredit.label, globalSources.wbPrivateCredit.url),
+    ],
+    marketGrowthMomentum: [
+      mkCitation(globalSources.imf.label, globalSources.imf.url),
+      mkCitation(globalSources.wbGdpGrowth.label, globalSources.wbGdpGrowth.url),
+      mkCitation(globalSources.wbGdpPerCapitaGrowth.label, globalSources.wbGdpPerCapitaGrowth.url),
+    ],
+    marketConcentrationRisk: [
+      mkCitation(globalSources.wbBankConcentration.label, globalSources.wbBankConcentration.url),
+      mkCitation(globalSources.wbFiveBankConcentration.label, globalSources.wbFiveBankConcentration.url),
+      countryInstitution,
+    ],
   }
 }
 
-const baseProfiles: Omit<CountryProfile, 'factorCitations' | 'sources' | 'factorDataQuality'>[] = [
+type BaseCountryProfile = Omit<CountryProfile, 'factorCitations' | 'sources' | 'factorDataQuality' | 'factors'> & {
+  factors: Partial<Record<FactorKey, number>>
+}
+
+const baseProfiles: BaseCountryProfile[] = [
   {
     code: 'US',
     name: 'United States',
@@ -681,11 +722,21 @@ const baseProfiles: Omit<CountryProfile, 'factorCitations' | 'sources' | 'factor
   },
 ]
 
-const withOverrides = (
-  profile: Omit<CountryProfile, 'factorCitations' | 'sources' | 'factorDataQuality'>,
-): CountryProfile => {
+const baseFactorDefaults: Record<FactorKey, number> = {
+  economicStrength: 60,
+  regulatoryComplexity: 55,
+  taxTariffFriction: 55,
+  geopoliticalRisk: 50,
+  dealExecutionRisk: 52,
+  marketSizeDepth: 55,
+  marketGrowthMomentum: 55,
+  marketConcentrationRisk: 50,
+}
+
+const withOverrides = (profile: BaseCountryProfile): CountryProfile => {
   const override = indicatorFactorOverrides[profile.code] ?? {}
   const factors: Record<FactorKey, number> = {
+    ...baseFactorDefaults,
     ...profile.factors,
     ...override,
   }
@@ -727,6 +778,24 @@ const withOverrides = (
       confidence: 0.67,
       trendDirection: 'down',
       delta: -0.6,
+    },
+    marketSizeDepth: {
+      lastRefreshed: indicatorOverridesGeneratedAt,
+      confidence: liveFactorConfidence.marketSizeDepth ?? 0.83,
+      trendDirection: 'up',
+      delta: 1.1,
+    },
+    marketGrowthMomentum: {
+      lastRefreshed: indicatorOverridesGeneratedAt,
+      confidence: liveFactorConfidence.marketGrowthMomentum ?? 0.81,
+      trendDirection: 'up',
+      delta: 1.4,
+    },
+    marketConcentrationRisk: {
+      lastRefreshed: indicatorOverridesGeneratedAt,
+      confidence: liveFactorConfidence.marketConcentrationRisk ?? 0.79,
+      trendDirection: 'flat',
+      delta: 0,
     },
   }
 

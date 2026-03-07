@@ -117,8 +117,19 @@ const formatResearchError = (raw: string): string => {
   return message
 }
 
-const factorLabel = (key: FactorKey): string =>
-  key.replace(/([A-Z])/g, ' $1').replace(/^./, (letter) => letter.toUpperCase())
+const factorLabel = (key: FactorKey): string => {
+  const labels: Record<FactorKey, string> = {
+    economicStrength: 'Economic Strength',
+    regulatoryComplexity: 'Regulatory Complexity',
+    taxTariffFriction: 'Tax/Tariff Friction',
+    geopoliticalRisk: 'Geopolitical Risk',
+    dealExecutionRisk: 'Deal Execution Risk',
+    marketSizeDepth: 'Market Size & Depth',
+    marketGrowthMomentum: 'Market Growth Momentum',
+    marketConcentrationRisk: 'Market Concentration Risk',
+  }
+  return labels[key]
+}
 
 const trendArrow = (direction: 'up' | 'down' | 'flat'): string => {
   if (direction === 'up') {
@@ -386,7 +397,7 @@ const dealProfileMetrics = (profile: ScoredCountry): RadarMetric[] => {
 
   return [
     { label: 'Market Position', value: profile.scenarioScore },
-    { label: 'Growth', value: profile.factors.economicStrength },
+    { label: 'Growth', value: profile.factors.marketGrowthMomentum },
     { label: 'Technology', value: Math.round(technology) },
     { label: 'Customer Quality', value: Math.round(customerQuality) },
     { label: 'Regulatory Risk', value: profile.factors.regulatoryComplexity },
