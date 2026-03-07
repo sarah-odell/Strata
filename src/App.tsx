@@ -245,7 +245,7 @@ function App() {
           </article>
 
           <article className="definition-card">
-            <h4>Defense / A&amp;D</h4>
+            <h4>Aerospace &amp; Defense</h4>
             <p>
               Defense, aerospace, and dual-use technology businesses serving government and
               mission-critical commercial programs.
