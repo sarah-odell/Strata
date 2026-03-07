@@ -932,6 +932,26 @@ li:first-child {
   color: var(--score-very-weak);
 }
 
+.research-results-header {
+  margin-top: 1.25rem;
+}
+
+.research-empty-state {
+  margin-top: 1rem;
+}
+
+.research-results-list {
+  margin-top: 1rem;
+}
+
+.research-result-item {
+  cursor: pointer;
+}
+
+.research-result-item:hover {
+  border-color: var(--border-hover);
+}
+
 .data-points-grid {
   display: flex;
   flex-wrap: wrap;

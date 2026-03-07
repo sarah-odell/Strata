@@ -1100,21 +1100,20 @@ function App() {
             </>
           ) : (
             <>
-              <section className="grid-header" style={{ marginTop: '1.25rem' }}>
+              <section className="grid-header research-results-header">
                 <h3>Research Results</h3>
                 <p>Completed ensemble analyses from AI research agents.</p>
               </section>
               {researchResults.length === 0 ? (
-                <p className="prompt-subtitle" style={{ marginTop: '1rem' }}>
+                <p className="prompt-subtitle research-empty-state">
                   No research results yet. Run your first analysis above.
                 </p>
               ) : (
-                <section className="prompt-results" style={{ marginTop: '1rem' }}>
+                <section className="prompt-results research-results-list">
                   {researchResults.map((r, i) => (
                     <article
                       key={i}
-                      className="prompt-result-card"
-                      style={{ cursor: 'pointer' }}
+                      className="prompt-result-card research-result-item"
                       onClick={() => setSelectedResearch(r)}
                     >
                       <p className="top-rank">{r.countryCode}</p>
