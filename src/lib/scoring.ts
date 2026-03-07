@@ -3,6 +3,18 @@ import { type CountryProfile, type FactorKey } from '../data/countries'
 export type Strategy = 'Buyout' | 'Growth' | 'Low-Risk Entry'
 export type ScenarioCase = 'base' | 'bull' | 'bear'
 export type DealSize = 'small' | 'mid' | 'large'
+export type PortfolioCapability =
+  | 'regulatoryOperations'
+  | 'integrationPlaybook'
+  | 'governmentRelations'
+  | 'digitalGoToMarket'
+  | 'supplyChainOperations'
+
+export type PortfolioAdjacencyInputs = {
+  sectors: string[]
+  regions: string[]
+  capabilities: PortfolioCapability[]
+}
 
 export type FactorWeight = {
   key: FactorKey
@@ -77,6 +89,7 @@ export type ScoredCountry = CountryProfile & {
   scenarioScore: number
   scenarioRecommendation: RecommendationLabel
   dealSizeAdjustment: number
+  portfolioAdjacencyAdjustment: number
   scenarios: {
     base: number
     bull: number
@@ -107,6 +120,69 @@ const dealSizeAdjustment = (profile: CountryProfile, dealSize: DealSize): number
     (100 - profile.factors.taxTariffFriction) * 0.2
 
   return Math.round(clamp((scaleScore - 50) / 8, -6, 6))
+}
+
+const capabilityAdjustment = (
+  profile: CountryProfile,
+  sector: string,
+  capabilities: PortfolioCapability[],
+): number => {
+  let bonus = 0
+
+  if (capabilities.includes('regulatoryOperations')) {
+    bonus += (profile.factors.regulatoryComplexity / 100) * 1.8
+  }
+
+  if (capabilities.includes('integrationPlaybook')) {
+    bonus += (profile.factors.dealExecutionRisk / 100) * 1.8
+  }
+
+  if (
+    capabilities.includes('governmentRelations') &&
+    ['Aerospace & Defense', 'Energy & Infrastructure', 'Financial Services'].includes(sector)
+  ) {
+    bonus += 1.8
+  }
+
+  if (
+    capabilities.includes('digitalGoToMarket') &&
+    ['Software & Data Services', 'Professional Services', 'Financial Services'].includes(sector)
+  ) {
+    bonus += 1.4
+  }
+
+  if (
+    capabilities.includes('supplyChainOperations') &&
+    ['Industrial Technology', 'Logistics & Transportation', 'Food & Agriculture'].includes(sector)
+  ) {
+    bonus += 1.4
+  }
+
+  return bonus
+}
+
+const portfolioAdjacencyAdjustment = (
+  profile: CountryProfile,
+  sector: string,
+  adjacency: PortfolioAdjacencyInputs | undefined,
+): number => {
+  if (!adjacency) {
+    return 0
+  }
+
+  let adjustment = 0
+
+  if (adjacency.sectors.includes(sector)) {
+    adjustment += 3.2
+  }
+
+  if (adjacency.regions.includes(profile.region)) {
+    adjustment += 2.2
+  }
+
+  adjustment += capabilityAdjustment(profile, sector, adjacency.capabilities)
+
+  return Math.round(clamp(adjustment, 0, 8))
 }
 
 const scoreBucket = (
@@ -140,6 +216,7 @@ export const scoreCountry = (
   strategy: Strategy,
   scenarioCase: ScenarioCase = 'base',
   dealSize: DealSize = 'mid',
+  portfolioAdjacency?: PortfolioAdjacencyInputs,
 ): ScoredCountry => {
   const sectorScore = profile.sectorFit[sector] ?? 0
   const weightedFactorScore = strategyWeights[strategy].reduce((acc, factor) => {
@@ -158,7 +235,8 @@ export const scoreCountry = (
   }
 
   const sizeAdjustment = dealSizeAdjustment(profile, dealSize)
-  const scenarioScore = clamp(scenarios[scenarioCase] + sizeAdjustment, 0, 100)
+  const adjacencyAdjustment = portfolioAdjacencyAdjustment(profile, sector, portfolioAdjacency)
+  const scenarioScore = clamp(scenarios[scenarioCase] + sizeAdjustment + adjacencyAdjustment, 0, 100)
 
   return {
     ...profile,
@@ -169,6 +247,7 @@ export const scoreCountry = (
     scenarioScore,
     scenarioRecommendation: scoreBucket(scenarioScore, strategy),
     dealSizeAdjustment: sizeAdjustment,
+    portfolioAdjacencyAdjustment: adjacencyAdjustment,
     scenarios: {
       base: scenarios.base,
       bull: scenarios.bull,
@@ -183,8 +262,11 @@ export const rankCountries = (
   strategy: Strategy,
   scenarioCase: ScenarioCase = 'base',
   dealSize: DealSize = 'mid',
+  portfolioAdjacency?: PortfolioAdjacencyInputs,
 ): ScoredCountry[] => {
   return profiles
-    .map((profile) => scoreCountry(profile, sector, strategy, scenarioCase, dealSize))
+    .map((profile) =>
+      scoreCountry(profile, sector, strategy, scenarioCase, dealSize, portfolioAdjacency),
+    )
     .sort((a, b) => b.scenarioScore - a.scenarioScore)
 }

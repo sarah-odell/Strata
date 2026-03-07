@@ -130,6 +130,26 @@
   background: rgba(18, 18, 26, 0.3);
 }
 
+.adjacency-panel {
+  margin-top: 1.45rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: rgba(18, 18, 26, 0.36);
+  padding: 1.1rem;
+}
+
+.adjacency-label {
+  margin: 0.72rem 0 0.45rem;
+  font-size: 0.84rem;
+  color: #b8bfce;
+}
+
+.chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
 .scenario-toggle {
   margin-top: 1.35rem;
   display: flex;

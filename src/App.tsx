@@ -3,6 +3,8 @@ import './App.css'
 import { countryProfiles, supportedSectors, type FactorKey } from './data/countries'
 import {
   type DealSize,
+  type PortfolioAdjacencyInputs,
+  type PortfolioCapability,
   rankCountries,
   strategyWeights,
   type ScenarioCase,
@@ -34,6 +36,13 @@ const scenarioLabel: Record<ScenarioCase, string> = {
   bull: 'Bull Case',
   bear: 'Bear Case',
 }
+const capabilityOptions: { label: string; value: PortfolioCapability }[] = [
+  { label: 'Regulatory Operations', value: 'regulatoryOperations' },
+  { label: 'Integration Playbook', value: 'integrationPlaybook' },
+  { label: 'Government Relations', value: 'governmentRelations' },
+  { label: 'Digital Go-To-Market', value: 'digitalGoToMarket' },
+  { label: 'Supply Chain Operations', value: 'supplyChainOperations' },
+]
 
 type PromptAssumptions = {
   strategy: Strategy
@@ -254,6 +263,9 @@ const topStrengths = (profile: ScoredCountry, strategy: Strategy): string[] => {
     .map((item) => factorLabel(item.key))
 }
 
+const toggleItem = <T,>(items: T[], value: T): T[] =>
+  items.includes(value) ? items.filter((item) => item !== value) : [...items, value]
+
 function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('radar')
   const [rankingView, setRankingView] = useState<RankingView>('table')
@@ -266,10 +278,26 @@ function App() {
     'We run a control-focused fund and need our next platform in a politically stable OECD market with strong logistics density and manageable execution risk; we are considering an initial foothold in the Netherlands.',
   )
   const [fundSizeInput, setFundSizeInput] = useState<string>('2000')
+  const [portfolioSectors, setPortfolioSectors] = useState<string[]>([])
+  const [portfolioRegions, setPortfolioRegions] = useState<string[]>([])
+  const [portfolioCapabilities, setPortfolioCapabilities] = useState<PortfolioCapability[]>([])
+
+  const regionOptions = useMemo(
+    () => Array.from(new Set(countryProfiles.map((profile) => profile.region))),
+    [],
+  )
+  const portfolioAdjacency = useMemo<PortfolioAdjacencyInputs>(
+    () => ({
+      sectors: portfolioSectors,
+      regions: portfolioRegions,
+      capabilities: portfolioCapabilities,
+    }),
+    [portfolioCapabilities, portfolioRegions, portfolioSectors],
+  )
 
   const ranked = useMemo(
-    () => rankCountries(countryProfiles, sector, strategy, scenarioCase, dealSize),
-    [sector, strategy, scenarioCase, dealSize],
+    () => rankCountries(countryProfiles, sector, strategy, scenarioCase, dealSize, portfolioAdjacency),
+    [sector, strategy, scenarioCase, dealSize, portfolioAdjacency],
   )
   const promptAssumptions = useMemo(
     () => inferAssumptions(dealPrompt, fundSizeInput, { strategy, sector, scenarioCase, dealSize }),
@@ -283,8 +311,9 @@ function App() {
         promptAssumptions.strategy,
         promptAssumptions.scenarioCase,
         promptAssumptions.dealSize,
+        portfolioAdjacency,
       ),
-    [promptAssumptions],
+    [promptAssumptions, portfolioAdjacency],
   )
   const tailoredTopThree = tailoredRanked.slice(0, 3)
   const targetCountry = promptAssumptions.targetCountryCode
@@ -353,6 +382,56 @@ function App() {
                 ))}
               </select>
             </label>
+          </section>
+
+          <section className="adjacency-panel">
+            <p className="weights-title">Portfolio Adjacency Inputs</p>
+            <p className="prompt-subtitle">
+              Add existing portfolio footprint so ranking captures expansion adjacencies.
+            </p>
+            <p className="adjacency-label">Existing portfolio sectors</p>
+            <div className="chip-grid">
+              {supportedSectors.map((item) => (
+                <button
+                  key={`adj-sector-${item}`}
+                  type="button"
+                  className={portfolioSectors.includes(item) ? 'scenario-btn active' : 'scenario-btn'}
+                  onClick={() => setPortfolioSectors((current) => toggleItem(current, item))}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+            <p className="adjacency-label">Existing portfolio regions</p>
+            <div className="chip-grid">
+              {regionOptions.map((region) => (
+                <button
+                  key={`adj-region-${region}`}
+                  type="button"
+                  className={portfolioRegions.includes(region) ? 'scenario-btn active' : 'scenario-btn'}
+                  onClick={() => setPortfolioRegions((current) => toggleItem(current, region))}
+                >
+                  {region}
+                </button>
+              ))}
+            </div>
+            <p className="adjacency-label">In-house capabilities</p>
+            <div className="chip-grid">
+              {capabilityOptions.map((capability) => (
+                <button
+                  key={`adj-capability-${capability.value}`}
+                  type="button"
+                  className={
+                    portfolioCapabilities.includes(capability.value) ? 'scenario-btn active' : 'scenario-btn'
+                  }
+                  onClick={() =>
+                    setPortfolioCapabilities((current) => toggleItem(current, capability.value))
+                  }
+                >
+                  {capability.label}
+                </button>
+              ))}
+            </div>
           </section>
 
           <section className="scenario-toggle">
@@ -446,7 +525,8 @@ function App() {
                   Overall score = 35% sector fit + 65% weighted risk-adjusted country factors for{' '}
                   <strong>{strategy}</strong> ·{' '}
                   <strong>{scenarioOptions.find((s) => s.value === scenarioCase)?.label}</strong> ·{' '}
-                  <strong>{dealSizeOptions.find((d) => d.value === dealSize)?.label}</strong>
+                  <strong>{dealSizeOptions.find((d) => d.value === dealSize)?.label}</strong> + portfolio
+                  adjacency overlay
                 </p>
               </div>
               <div className="ranking-view-toggle">
@@ -520,6 +600,7 @@ function App() {
                     <div className="factor-block">
                       <p>Sector fit: {profile.sectorScore}</p>
                       <p>Weighted country factors: {profile.weightedFactorScore}</p>
+                      <p>Portfolio adjacency adjustment: +{profile.portfolioAdjacencyAdjustment}</p>
                     </div>
 
                     <ul>
@@ -600,6 +681,7 @@ function App() {
                     <th>Recommendation</th>
                     <th>Sector Fit</th>
                     <th>Country Factors</th>
+                    <th>Adjacency</th>
                     <th>Confidence</th>
                     <th>Updated</th>
                   </tr>
@@ -621,6 +703,7 @@ function App() {
                       </td>
                       <td>{profile.sectorScore}</td>
                       <td>{profile.weightedFactorScore}</td>
+                      <td>+{profile.portfolioAdjacencyAdjustment}</td>
                       <td>{Math.round(profile.confidence * 100)}%</td>
                       <td>{profile.lastUpdated}</td>
                     </tr>
