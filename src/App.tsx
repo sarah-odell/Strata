@@ -407,6 +407,7 @@ function App() {
   const [batchStatus, setBatchStatus] = useState<{ total: number; completed: number; running: boolean }>({ total: 0, completed: 0, running: false })
   const [sortColumn, setSortColumn] = useState<string>('score')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+  const [radarRankChoice, setRadarRankChoice] = useState<number>(0)
 
   const regionOptions = useMemo(
     () => Array.from(new Set(countryProfiles.map((profile) => profile.region))),
@@ -481,8 +482,9 @@ function App() {
       : tailoredRanked.findIndex((country) => country.code === promptAssumptions.targetCountryCode) + 1
 
   const trackedCountries = ranked.length
-  const radarProfile = tailoredRanked[0] ?? ranked[0]
-  const radarContextLabel = `#1 tailored recommendation: ${radarProfile.name}`
+  const radarRankIndex = Math.min(radarRankChoice, Math.max(tailoredTopThree.length - 1, 0))
+  const radarProfile = tailoredTopThree[radarRankIndex] ?? tailoredTopThree[0] ?? ranked[0]
+  const radarContextLabel = `Top ${radarRankIndex + 1} tailored recommendation: ${radarProfile.name}`
   const radarMetrics = dealProfileMetrics(radarProfile)
   const radarSize = 380
   const radarCenter = radarSize / 2
@@ -985,6 +987,18 @@ function App() {
                 <p className="prompt-subtitle">
                   Instant profile view across market, growth, technology, customer quality, and risks.
                 </p>
+                <div className="radar-toggle">
+                  {tailoredTopThree.map((profile, index) => (
+                    <button
+                      key={`radar-choice-${profile.code}`}
+                      type="button"
+                      className={radarRankIndex === index ? 'scenario-btn active' : 'scenario-btn'}
+                      onClick={() => setRadarRankChoice(index)}
+                    >
+                      {podiumLabels[index]} · {profile.name}
+                    </button>
+                  ))}
+                </div>
               </div>
               <p className="radar-context">{radarContextLabel}</p>
             </div>

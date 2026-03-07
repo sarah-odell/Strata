@@ -418,6 +418,18 @@ h4 {
 
 /* --- Prompt assumptions --- */
 
+.radar-toggle {
+  margin-top: 0.55rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.radar-toggle .scenario-btn {
+  font-size: 0.74rem;
+  padding: 0.34rem 0.62rem;
+}
+
 .prompt-assumptions {
   margin-top: 0.75rem;
   display: flex;
