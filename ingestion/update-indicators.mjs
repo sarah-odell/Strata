@@ -7,26 +7,17 @@ const outputPath = path.join(rootDir, 'src', 'data', 'indicatorOverrides.ts')
 const runDate = new Date().toISOString().slice(0, 10)
 
 const countries = {
-  US: 'USA',
-  DE: 'DEU',
-  SG: 'SGP',
-  CA: 'CAN',
-  AE: 'ARE',
-  GB: 'GBR',
-  FR: 'FRA',
-  NL: 'NLD',
-  JP: 'JPN',
-  AU: 'AUS',
-  IN: 'IND',
-  BR: 'BRA',
-  MX: 'MEX',
-  ES: 'ESP',
-  IT: 'ITA',
-  KR: 'KOR',
-  SA: 'SAU',
-  SE: 'SWE',
-  PL: 'POL',
-  ID: 'IDN',
+  US: 'USA', DE: 'DEU', SG: 'SGP', CA: 'CAN', AE: 'ARE',
+  GB: 'GBR', FR: 'FRA', NL: 'NLD', JP: 'JPN', AU: 'AUS',
+  IN: 'IND', BR: 'BRA', MX: 'MEX', ES: 'ESP', IT: 'ITA',
+  KR: 'KOR', SA: 'SAU', SE: 'SWE', PL: 'POL', ID: 'IDN',
+  CH: 'CHE', DK: 'DNK', NO: 'NOR', FI: 'FIN', IE: 'IRL',
+  AT: 'AUT', BE: 'BEL', CZ: 'CZE', PT: 'PRT', GR: 'GRC',
+  HU: 'HUN', TR: 'TUR', RO: 'ROU', CN: 'CHN', HK: 'HKG',
+  TW: 'TWN', VN: 'VNM', TH: 'THA', PH: 'PHL', MY: 'MYS',
+  NZ: 'NZL', IL: 'ISR', QA: 'QAT', ZA: 'ZAF', NG: 'NGA',
+  EG: 'EGY', KE: 'KEN', MA: 'MAR', CL: 'CHL', CO: 'COL',
+  AR: 'ARG', PE: 'PER', CR: 'CRI',
 }
 
 const wbIndicators = {
@@ -39,17 +30,51 @@ const wbIndicators = {
 
 const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, value))
 
-const scoreByRange = (value, min, max) => {
-  if (max <= min) {
-    return 50
-  }
+// Absolute benchmark scoring — no relative ranking
+const scoreGdpGrowth = (growth) => {
+  // Absolute scale: negative growth is bad, 2% is solid, 5%+ is excellent
+  if (growth <= 0) return clamp(15 + growth * 5)
+  if (growth <= 1) return clamp(25 + growth * 20)
+  if (growth <= 3) return clamp(45 + (growth - 1) * 12.5)
+  if (growth <= 6) return clamp(70 + (growth - 3) * 7)
+  return clamp(91 + (growth - 6) * 2)
+}
 
-  return clamp(((value - min) / (max - min)) * 100)
+const scoreFdi = (fdiPctGdp) => {
+  // FDI as % of GDP: 0% = poor, 2% = decent, 5% = strong, 10%+ = excellent
+  if (fdiPctGdp <= 0) return clamp(10 + fdiPctGdp * 5)
+  if (fdiPctGdp <= 2) return clamp(20 + fdiPctGdp * 15)
+  if (fdiPctGdp <= 5) return clamp(50 + (fdiPctGdp - 2) * 10)
+  if (fdiPctGdp <= 15) return clamp(80 + (fdiPctGdp - 5) * 1.5)
+  return 95
+}
+
+const scoreTradeOpenness = (tradePctGdp) => {
+  // Trade as % of GDP: 30% = closed, 80% = moderate, 150%+ = very open
+  if (tradePctGdp <= 20) return 15
+  if (tradePctGdp <= 50) return clamp(15 + (tradePctGdp - 20) * 1.0)
+  if (tradePctGdp <= 100) return clamp(45 + (tradePctGdp - 50) * 0.6)
+  if (tradePctGdp <= 200) return clamp(75 + (tradePctGdp - 100) * 0.15)
+  return 90
 }
 
 const scoreInflation = (inflation) => {
+  // Distance from 2% target; both deflation and high inflation are bad
   const distance = Math.abs(inflation - 2)
-  return clamp(100 - distance * 8)
+  if (distance <= 0.5) return 95
+  if (distance <= 1.5) return clamp(95 - (distance - 0.5) * 15)
+  if (distance <= 4) return clamp(80 - (distance - 1.5) * 10)
+  if (distance <= 10) return clamp(55 - (distance - 4) * 6)
+  return clamp(20 - (distance - 10) * 2)
+}
+
+const scoreTariffRate = (tariffRate) => {
+  // Simple mean tariff rate → friction score. 0% = no friction, 15%+ = high friction
+  if (tariffRate <= 1) return clamp(5 + tariffRate * 5)
+  if (tariffRate <= 5) return clamp(10 + (tariffRate - 1) * 10)
+  if (tariffRate <= 10) return clamp(50 + (tariffRate - 5) * 7)
+  if (tariffRate <= 20) return clamp(85 + (tariffRate - 10) * 1)
+  return 95
 }
 
 const latestValue = (rows) => {
@@ -59,16 +84,22 @@ const latestValue = (rows) => {
 
 const fetchWbSeries = async (iso3, indicator) => {
   const url = `https://api.worldbank.org/v2/country/${iso3}/indicator/${indicator}?format=json&per_page=80`
-  const response = await fetch(url, { signal: AbortSignal.timeout(30000) })
+  try {
+    const response = await fetch(url, { signal: AbortSignal.timeout(30000) })
 
-  if (!response.ok) {
-    throw new Error(`World Bank request failed (${response.status}) for ${iso3} ${indicator}`)
+    if (!response.ok) {
+      console.warn(`World Bank returned ${response.status} for ${iso3} ${indicator}, using null`)
+      return null
+    }
+
+    const payload = await response.json()
+    const rows = Array.isArray(payload) ? payload[1] : []
+
+    return latestValue(Array.isArray(rows) ? rows : [])
+  } catch (err) {
+    console.warn(`World Bank fetch failed for ${iso3} ${indicator}: ${err.message}`)
+    return null
   }
-
-  const payload = await response.json()
-  const rows = Array.isArray(payload) ? payload[1] : []
-
-  return latestValue(Array.isArray(rows) ? rows : [])
 }
 
 const fetchImfGrowth = async () => {
@@ -121,32 +152,20 @@ const collectIndicatorValues = async () => {
 }
 
 const computeOverrides = (rows) => {
-  const gdpValues = rows.map((item) => item.gdpGrowth)
-  const fdiValues = rows.map((item) => item.fdi)
-  const tradeValues = rows.map((item) => item.tradeOpen)
-  const tariffValues = rows.map((item) => item.tariff)
-
-  const bounds = {
-    gdp: { min: Math.min(...gdpValues), max: Math.max(...gdpValues) },
-    fdi: { min: Math.min(...fdiValues), max: Math.max(...fdiValues) },
-    trade: { min: Math.min(...tradeValues), max: Math.max(...tradeValues) },
-    tariff: { min: Math.min(...tariffValues), max: Math.max(...tariffValues) },
-  }
-
   const overrides = {}
 
   for (const row of rows) {
-    const growthScore = scoreByRange(row.gdpGrowth, bounds.gdp.min, bounds.gdp.max)
-    const fdiScore = scoreByRange(row.fdi, bounds.fdi.min, bounds.fdi.max)
-    const tradeScore = scoreByRange(row.tradeOpen, bounds.trade.min, bounds.trade.max)
+    const growthScore = scoreGdpGrowth(row.gdpGrowth)
+    const fdiScore = scoreFdi(row.fdi)
+    const tradeScore = scoreTradeOpenness(row.tradeOpen)
     const inflationScore = scoreInflation(row.inflation)
 
     const economicStrength = Math.round(
       growthScore * 0.34 + fdiScore * 0.24 + tradeScore * 0.2 + inflationScore * 0.22,
     )
 
-    const tariffPressure = scoreByRange(row.tariff, bounds.tariff.min, bounds.tariff.max)
-    const taxTariffFriction = Math.round(clamp(tariffPressure * 0.65 + (100 - tradeScore) * 0.35))
+    const tariffFriction = scoreTariffRate(row.tariff)
+    const taxTariffFriction = Math.round(clamp(tariffFriction * 0.65 + (100 - tradeScore) * 0.35))
 
     overrides[row.code] = {
       economicStrength,

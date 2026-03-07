@@ -405,6 +405,8 @@ function App() {
   const [researchResults, setResearchResults] = useState<ResearchResult[]>([])
   const [selectedResearch, setSelectedResearch] = useState<ResearchResult | null>(null)
   const [batchStatus, setBatchStatus] = useState<{ total: number; completed: number; running: boolean }>({ total: 0, completed: 0, running: false })
+  const [sortColumn, setSortColumn] = useState<string>('score')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
   const regionOptions = useMemo(
     () => Array.from(new Set(countryProfiles.map((profile) => profile.region))),
@@ -423,6 +425,36 @@ function App() {
     () => rankCountries(countryProfiles, sector, strategy, scenarioCase, dealSize, portfolioAdjacency),
     [sector, strategy, scenarioCase, dealSize, portfolioAdjacency],
   )
+  const sortedRanked = useMemo(() => {
+    const sorted = [...ranked]
+    const dir = sortDirection === 'asc' ? 1 : -1
+    sorted.sort((a, b) => {
+      switch (sortColumn) {
+        case 'country': return dir * a.name.localeCompare(b.name)
+        case 'region': return dir * a.region.localeCompare(b.region)
+        case 'score': return dir * (a.scenarioScore - b.scenarioScore)
+        case 'recommendation': return dir * (a.scenarioScore - b.scenarioScore)
+        case 'sectorFit': return dir * (a.sectorScore - b.sectorScore)
+        case 'factors': return dir * (a.weightedFactorScore - b.weightedFactorScore)
+        case 'adjacency': return dir * (a.portfolioAdjacencyAdjustment - b.portfolioAdjacencyAdjustment)
+        case 'confidence': return dir * (a.confidence - b.confidence)
+        default: return dir * (a.scenarioScore - b.scenarioScore)
+      }
+    })
+    return sorted
+  }, [ranked, sortColumn, sortDirection])
+
+  const toggleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection((d) => d === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortColumn(column)
+      setSortDirection(column === 'country' || column === 'region' ? 'asc' : 'desc')
+    }
+  }
+  const sortIndicator = (column: string) =>
+    sortColumn === column ? (sortDirection === 'asc' ? ' \u25B2' : ' \u25BC') : ''
+
   const promptAssumptions = useMemo(
     () => inferAssumptions(dealPrompt, fundSizeInput, { strategy, sector, scenarioCase, dealSize }),
     [dealPrompt, fundSizeInput, strategy, sector, scenarioCase, dealSize],
@@ -777,20 +809,20 @@ function App() {
               <table className="country-table">
                 <thead>
                   <tr>
-                    <th>Rank</th>
-                    <th>Country</th>
-                    <th>Region</th>
-                    <th>Score</th>
-                    <th>Recommendation</th>
-                    <th>Sector Fit</th>
-                    <th>Country Factors</th>
-                    <th>Adjacency</th>
-                    <th>Confidence</th>
+                    <th>#</th>
+                    <th className="sortable-th" onClick={() => toggleSort('country')}>Country{sortIndicator('country')}</th>
+                    <th className="sortable-th" onClick={() => toggleSort('region')}>Region{sortIndicator('region')}</th>
+                    <th className="sortable-th" onClick={() => toggleSort('score')}>Score{sortIndicator('score')}</th>
+                    <th className="sortable-th" onClick={() => toggleSort('recommendation')}>Rec.{sortIndicator('recommendation')}</th>
+                    <th className="sortable-th" onClick={() => toggleSort('sectorFit')}>Sector Fit{sortIndicator('sectorFit')}</th>
+                    <th className="sortable-th" onClick={() => toggleSort('factors')}>Factors{sortIndicator('factors')}</th>
+                    <th className="sortable-th" onClick={() => toggleSort('adjacency')}>Adj.{sortIndicator('adjacency')}</th>
+                    <th className="sortable-th" onClick={() => toggleSort('confidence')}>Conf.{sortIndicator('confidence')}</th>
                     <th>Updated</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {ranked.map((profile, index) => (
+                  {sortedRanked.map((profile, index) => (
                     <tr key={`table-${profile.code}`}>
                       <td>#{index + 1}</td>
                       <td>

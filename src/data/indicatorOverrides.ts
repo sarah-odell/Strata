@@ -12,215 +12,215 @@ export const liveFactorConfidence: Partial<Record<FactorKey, number>> = {
 
 export const indicatorFactorOverrides: FactorOverrides = {
   "US": {
-    "economicStrength": 41,
-    "taxTariffFriction": 48
+    "economicStrength": 51,
+    "taxTariffFriction": 46
   },
   "DE": {
-    "economicStrength": 35,
-    "taxTariffFriction": 38
+    "economicStrength": 46,
+    "taxTariffFriction": 26
   },
   "SG": {
-    "economicStrength": 86,
-    "taxTariffFriction": 0
+    "economicStrength": 83,
+    "taxTariffFriction": 7
   },
   "CA": {
-    "economicStrength": 33,
-    "taxTariffFriction": 39
-  },
-  "AE": {
-    "economicStrength": 49,
-    "taxTariffFriction": 34
-  },
-  "GB": {
-    "economicStrength": 34,
-    "taxTariffFriction": 36
-  },
-  "FR": {
-    "economicStrength": 42,
-    "taxTariffFriction": 39
-  },
-  "NL": {
-    "economicStrength": 41,
-    "taxTariffFriction": 29
-  },
-  "JP": {
-    "economicStrength": 37,
-    "taxTariffFriction": 42
-  },
-  "AU": {
-    "economicStrength": 33,
-    "taxTariffFriction": 42
-  },
-  "IN": {
-    "economicStrength": 54,
-    "taxTariffFriction": 82
-  },
-  "BR": {
-    "economicStrength": 46,
-    "taxTariffFriction": 99
-  },
-  "MX": {
-    "economicStrength": 37,
-    "taxTariffFriction": 42
-  },
-  "ES": {
     "economicStrength": 48,
-    "taxTariffFriction": 39
-  },
-  "IT": {
-    "economicStrength": 39,
-    "taxTariffFriction": 40
-  },
-  "KR": {
-    "economicStrength": 46,
-    "taxTariffFriction": 56
-  },
-  "SA": {
-    "economicStrength": 26,
-    "taxTariffFriction": 61
-  },
-  "SE": {
-    "economicStrength": 44,
-    "taxTariffFriction": 35
-  },
-  "PL": {
-    "economicStrength": 52,
-    "taxTariffFriction": 35
-  },
-  "ID": {
-    "economicStrength": 54,
-    "taxTariffFriction": 61
-  },
-  "CH": {
-    "economicStrength": 45,
-    "taxTariffFriction": 27
-  },
-  "DK": {
-    "economicStrength": 42,
-    "taxTariffFriction": 32
-  },
-  "NO": {
-    "economicStrength": 40,
     "taxTariffFriction": 28
   },
-  "FI": {
-    "economicStrength": 38,
-    "taxTariffFriction": 31
-  },
-  "IE": {
-    "economicStrength": 55,
-    "taxTariffFriction": 22
-  },
-  "AT": {
-    "economicStrength": 38,
-    "taxTariffFriction": 33
-  },
-  "BE": {
-    "economicStrength": 36,
-    "taxTariffFriction": 35
-  },
-  "CZ": {
-    "economicStrength": 44,
+  "AE": {
+    "economicStrength": 63,
     "taxTariffFriction": 30
   },
+  "GB": {
+    "economicStrength": 40,
+    "taxTariffFriction": 24
+  },
+  "FR": {
+    "economicStrength": 58,
+    "taxTariffFriction": 28
+  },
+  "NL": {
+    "economicStrength": 47,
+    "taxTariffFriction": 19
+  },
+  "JP": {
+    "economicStrength": 47,
+    "taxTariffFriction": 33
+  },
+  "AU": {
+    "economicStrength": 46,
+    "taxTariffFriction": 33
+  },
+  "IN": {
+    "economicStrength": 60,
+    "taxTariffFriction": 76
+  },
+  "BR": {
+    "economicStrength": 61,
+    "taxTariffFriction": 82
+  },
+  "MX": {
+    "economicStrength": 52,
+    "taxTariffFriction": 32
+  },
+  "ES": {
+    "economicStrength": 66,
+    "taxTariffFriction": 28
+  },
+  "IT": {
+    "economicStrength": 52,
+    "taxTariffFriction": 29
+  },
+  "KR": {
+    "economicStrength": 61,
+    "taxTariffFriction": 48
+  },
+  "SA": {
+    "economicStrength": 42,
+    "taxTariffFriction": 55
+  },
+  "SE": {
+    "economicStrength": 65,
+    "taxTariffFriction": 21
+  },
+  "PL": {
+    "economicStrength": 69,
+    "taxTariffFriction": 21
+  },
+  "ID": {
+    "economicStrength": 66,
+    "taxTariffFriction": 58
+  },
+  "CH": {
+    "economicStrength": 41,
+    "taxTariffFriction": 28
+  },
+  "DK": {
+    "economicStrength": 78,
+    "taxTariffFriction": 20
+  },
+  "NO": {
+    "economicStrength": 61,
+    "taxTariffFriction": 29
+  },
+  "FI": {
+    "economicStrength": 53,
+    "taxTariffFriction": 25
+  },
+  "IE": {
+    "economicStrength": 62,
+    "taxTariffFriction": 16
+  },
+  "AT": {
+    "economicStrength": 51,
+    "taxTariffFriction": 21
+  },
+  "BE": {
+    "economicStrength": 47,
+    "taxTariffFriction": 18
+  },
+  "CZ": {
+    "economicStrength": 67,
+    "taxTariffFriction": 20
+  },
   "PT": {
-    "economicStrength": 43,
-    "taxTariffFriction": 34
+    "economicStrength": 68,
+    "taxTariffFriction": 24
   },
   "GR": {
-    "economicStrength": 46,
-    "taxTariffFriction": 36
+    "economicStrength": 67,
+    "taxTariffFriction": 24
   },
   "HU": {
     "economicStrength": 48,
-    "taxTariffFriction": 32
+    "taxTariffFriction": 19
   },
   "TR": {
-    "economicStrength": 52,
-    "taxTariffFriction": 44
+    "economicStrength": 41,
+    "taxTariffFriction": 62
   },
   "RO": {
-    "economicStrength": 56,
-    "taxTariffFriction": 28
+    "economicStrength": 52,
+    "taxTariffFriction": 26
   },
   "CN": {
-    "economicStrength": 48,
-    "taxTariffFriction": 55
+    "economicStrength": 57,
+    "taxTariffFriction": 58
   },
   "HK": {
-    "economicStrength": 43,
-    "taxTariffFriction": 15
+    "economicStrength": 84,
+    "taxTariffFriction": 7
   },
   "TW": {
-    "economicStrength": 50,
-    "taxTariffFriction": 30
+    "economicStrength": 42,
+    "taxTariffFriction": 33
   },
   "VN": {
-    "economicStrength": 62,
-    "taxTariffFriction": 42
+    "economicStrength": 83,
+    "taxTariffFriction": 29
   },
   "TH": {
-    "economicStrength": 44,
-    "taxTariffFriction": 38
+    "economicStrength": 72,
+    "taxTariffFriction": 54
   },
   "PH": {
-    "economicStrength": 58,
-    "taxTariffFriction": 45
+    "economicStrength": 70,
+    "taxTariffFriction": 42
   },
   "MY": {
-    "economicStrength": 50,
-    "taxTariffFriction": 35
+    "economicStrength": 79,
+    "taxTariffFriction": 41
   },
   "NZ": {
-    "economicStrength": 36,
-    "taxTariffFriction": 32
+    "economicStrength": 40,
+    "taxTariffFriction": 34
   },
   "IL": {
-    "economicStrength": 52,
-    "taxTariffFriction": 35
+    "economicStrength": 47,
+    "taxTariffFriction": 39
   },
   "QA": {
-    "economicStrength": 38,
-    "taxTariffFriction": 20
+    "economicStrength": 41,
+    "taxTariffFriction": 35
   },
   "ZA": {
-    "economicStrength": 32,
-    "taxTariffFriction": 40
+    "economicStrength": 37,
+    "taxTariffFriction": 60
   },
   "NG": {
-    "economicStrength": 44,
-    "taxTariffFriction": 55
+    "economicStrength": 30,
+    "taxTariffFriction": 84
   },
   "EG": {
-    "economicStrength": 40,
-    "taxTariffFriction": 52
+    "economicStrength": 41,
+    "taxTariffFriction": 81
   },
   "KE": {
-    "economicStrength": 52,
-    "taxTariffFriction": 45
+    "economicStrength": 51,
+    "taxTariffFriction": 82
   },
   "MA": {
-    "economicStrength": 48,
-    "taxTariffFriction": 38
+    "economicStrength": 65,
+    "taxTariffFriction": 46
   },
   "CL": {
-    "economicStrength": 42,
-    "taxTariffFriction": 32
+    "economicStrength": 63,
+    "taxTariffFriction": 23
   },
   "CO": {
-    "economicStrength": 48,
-    "taxTariffFriction": 40
+    "economicStrength": 45,
+    "taxTariffFriction": 47
   },
   "AR": {
-    "economicStrength": 35,
-    "taxTariffFriction": 68
+    "economicStrength": 18,
+    "taxTariffFriction": 83
   },
   "PE": {
-    "economicStrength": 44,
-    "taxTariffFriction": 36
+    "economicStrength": 63,
+    "taxTariffFriction": 26
   },
   "CR": {
-    "economicStrength": 46,
-    "taxTariffFriction": 34
+    "economicStrength": 72,
+    "taxTariffFriction": 32
   }
 }

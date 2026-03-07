@@ -676,6 +676,15 @@ li:first-child {
   top: 0;
 }
 
+.sortable-th {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease;
+}
+.sortable-th:hover {
+  color: var(--text-primary);
+}
+
 .country-table td {
   font-size: 0.875rem;
   color: var(--text-secondary);
