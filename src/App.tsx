@@ -18,9 +18,9 @@ const scenarioOptions: { label: string; value: ScenarioCase }[] = [
   { label: 'Bear Case', value: 'bear' },
 ]
 const dealSizeOptions: { label: string; value: DealSize }[] = [
-  { label: 'Small Deal', value: 'small' },
-  { label: 'Mid Deal', value: 'mid' },
-  { label: 'Large Deal', value: 'large' },
+  { label: '< $250M EV', value: 'small' },
+  { label: '$250M-$1B EV', value: 'mid' },
+  { label: '> $1B EV', value: 'large' },
 ]
 const dealSizeRanges: Record<DealSize, string> = {
   small: 'Under $250M enterprise value',
@@ -155,8 +155,7 @@ function App() {
             ))}
           </section>
           <p className="deal-size-note">
-            Deal size bands: Small = {dealSizeRanges.small}; Mid = {dealSizeRanges.mid}; Large ={' '}
-            {dealSizeRanges.large}.
+            Deal size bands are based on target enterprise value.
           </p>
 
           <section className="grid-header">
