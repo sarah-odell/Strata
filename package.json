@@ -13,12 +13,15 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "monitor:regulations:once": "node monitoring/regulation-monitor.mjs --once",
-    "monitor:regulations": "node monitoring/regulation-monitor.mjs --schedule \"0 */6 * * *\""
+    "monitor:regulations": "node monitoring/regulation-monitor.mjs --schedule \"0 */6 * * *\"",
+    "research": "node --import tsx/esm research/run.ts"
   },
   "dependencies": {
+    "@tangle-network/agent-browser-driver": "^0.5.0",
     "express": "^5.1.0",
     "node-cron": "^4.2.1",
     "pdfkit": "^0.17.2",
+    "playwright": "^1.58.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

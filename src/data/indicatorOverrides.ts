@@ -90,5 +90,137 @@ export const indicatorFactorOverrides: FactorOverrides = {
   "ID": {
     "economicStrength": 54,
     "taxTariffFriction": 61
+  },
+  "CH": {
+    "economicStrength": 45,
+    "taxTariffFriction": 27
+  },
+  "DK": {
+    "economicStrength": 42,
+    "taxTariffFriction": 32
+  },
+  "NO": {
+    "economicStrength": 40,
+    "taxTariffFriction": 28
+  },
+  "FI": {
+    "economicStrength": 38,
+    "taxTariffFriction": 31
+  },
+  "IE": {
+    "economicStrength": 55,
+    "taxTariffFriction": 22
+  },
+  "AT": {
+    "economicStrength": 38,
+    "taxTariffFriction": 33
+  },
+  "BE": {
+    "economicStrength": 36,
+    "taxTariffFriction": 35
+  },
+  "CZ": {
+    "economicStrength": 44,
+    "taxTariffFriction": 30
+  },
+  "PT": {
+    "economicStrength": 43,
+    "taxTariffFriction": 34
+  },
+  "GR": {
+    "economicStrength": 46,
+    "taxTariffFriction": 36
+  },
+  "HU": {
+    "economicStrength": 48,
+    "taxTariffFriction": 32
+  },
+  "TR": {
+    "economicStrength": 52,
+    "taxTariffFriction": 44
+  },
+  "RO": {
+    "economicStrength": 56,
+    "taxTariffFriction": 28
+  },
+  "CN": {
+    "economicStrength": 48,
+    "taxTariffFriction": 55
+  },
+  "HK": {
+    "economicStrength": 43,
+    "taxTariffFriction": 15
+  },
+  "TW": {
+    "economicStrength": 50,
+    "taxTariffFriction": 30
+  },
+  "VN": {
+    "economicStrength": 62,
+    "taxTariffFriction": 42
+  },
+  "TH": {
+    "economicStrength": 44,
+    "taxTariffFriction": 38
+  },
+  "PH": {
+    "economicStrength": 58,
+    "taxTariffFriction": 45
+  },
+  "MY": {
+    "economicStrength": 50,
+    "taxTariffFriction": 35
+  },
+  "NZ": {
+    "economicStrength": 36,
+    "taxTariffFriction": 32
+  },
+  "IL": {
+    "economicStrength": 52,
+    "taxTariffFriction": 35
+  },
+  "QA": {
+    "economicStrength": 38,
+    "taxTariffFriction": 20
+  },
+  "ZA": {
+    "economicStrength": 32,
+    "taxTariffFriction": 40
+  },
+  "NG": {
+    "economicStrength": 44,
+    "taxTariffFriction": 55
+  },
+  "EG": {
+    "economicStrength": 40,
+    "taxTariffFriction": 52
+  },
+  "KE": {
+    "economicStrength": 52,
+    "taxTariffFriction": 45
+  },
+  "MA": {
+    "economicStrength": 48,
+    "taxTariffFriction": 38
+  },
+  "CL": {
+    "economicStrength": 42,
+    "taxTariffFriction": 32
+  },
+  "CO": {
+    "economicStrength": 48,
+    "taxTariffFriction": 40
+  },
+  "AR": {
+    "economicStrength": 35,
+    "taxTariffFriction": 68
+  },
+  "PE": {
+    "economicStrength": 44,
+    "taxTariffFriction": 36
+  },
+  "CR": {
+    "economicStrength": 46,
+    "taxTariffFriction": 34
   }
 }

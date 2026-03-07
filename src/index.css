@@ -27,6 +27,7 @@
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+  font-size: 15px;
   color: var(--text-primary);
   background: var(--surface-0);
   font-synthesis: none;

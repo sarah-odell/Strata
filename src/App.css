@@ -46,7 +46,7 @@
 
 .hero h1 {
   margin: 0;
-  font-size: 0.9375rem;
+  font-size: 1.125rem;
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.01em;
@@ -76,8 +76,8 @@
   border-radius: 0;
   background: transparent;
   color: var(--text-secondary);
-  padding: 0.5rem 1rem;
-  font-size: 0.8125rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: color 120ms ease, border-color 120ms ease;
@@ -147,7 +147,7 @@ input {
   background: var(--surface-0);
   color: var(--text-primary);
   font-family: 'Inter', system-ui, sans-serif;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   transition: border-color 120ms ease;
 }
 
@@ -203,8 +203,8 @@ input:focus {
   border-radius: 4px;
   background: transparent;
   color: var(--text-secondary);
-  padding: 0.3125rem 0.625rem;
-  font-size: 0.75rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 120ms ease;
@@ -285,14 +285,14 @@ input:focus {
 
 .weights-title {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .prompt-subtitle {
   margin: 0.25rem 0 0.75rem;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
 }
 
@@ -341,13 +341,13 @@ input:focus {
 
 .grid-header h3 {
   margin: 0;
-  font-size: 0.9375rem;
+  font-size: 1.0625rem;
   font-weight: 600;
 }
 
 .grid-header p {
   margin: 0.25rem 0 0;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
 }
 
@@ -392,7 +392,7 @@ input:focus {
 .top-market-card h4,
 h4 {
   margin: 0.25rem 0 0;
-  font-size: 0.875rem;
+  font-size: 1rem;
 }
 
 .region {
@@ -539,15 +539,15 @@ ul {
 }
 
 .factor-block p {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
 }
 
 ul {
   color: var(--text-secondary);
   padding-left: 1rem;
-  line-height: 1.5;
-  font-size: 0.8125rem;
+  line-height: 1.6;
+  font-size: 0.875rem;
 }
 
 li {
@@ -589,9 +589,9 @@ li:first-child {
 }
 
 .summary {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 .meta {
@@ -666,7 +666,7 @@ li:first-child {
 }
 
 .country-table th {
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -677,7 +677,7 @@ li:first-child {
 }
 
 .country-table td {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
 }
 
@@ -747,8 +747,8 @@ li:first-child {
 .radar-layout {
   margin-top: 0.75rem;
   display: grid;
-  grid-template-columns: minmax(240px, 340px) 1fr;
-  gap: 1rem;
+  grid-template-columns: minmax(260px, 360px) 1fr;
+  gap: 1.25rem;
   align-items: center;
 }
 
@@ -776,7 +776,7 @@ li:first-child {
   display: flex;
   justify-content: space-between;
   gap: 0.75rem;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
 }
 
@@ -824,35 +824,79 @@ li:first-child {
 
 /* --- Research view --- */
 
-.controls {
+.research-hero {
+  margin-top: 1.25rem;
+  padding: 1.25rem 1.25rem 1rem;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.research-hero h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.research-hero-text p {
+  margin: 0.375rem 0 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 52rem;
+}
+
+.research-hero-agents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.agent-pip {
+  display: inline-block;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.25rem 0.625rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--surface-0);
+}
+
+.research-trigger-panel {
   margin-top: 1rem;
-  padding: 0.75rem 1rem;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 0.75rem;
+  padding: 1rem 1.25rem;
   background: var(--surface-1);
   border: 1px solid var(--border);
   border-radius: 6px;
 }
 
-.research-trigger {
+.research-trigger-grid {
+  margin-top: 0.75rem;
+  display: grid;
   grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 0.75rem;
   align-items: end;
 }
 
-.research-actions {
-  display: grid;
-  gap: 0.375rem;
+.research-trigger-action {
+  display: flex;
+  align-items: end;
 }
 
 .research-run-btn {
   height: 2.25rem;
-  min-width: 10rem;
+  min-width: 12rem;
   padding: 0 1.25rem;
-  border: 1px solid var(--border-hover);
+  border: 1px solid var(--accent);
   border-radius: 4px;
-  background: var(--surface-2);
-  color: var(--text-primary);
+  background: var(--accent-dim);
+  color: var(--accent);
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 0.8125rem;
   font-weight: 600;
@@ -861,23 +905,43 @@ li:first-child {
 }
 
 .research-run-btn:hover:not(:disabled) {
-  border-color: var(--accent);
-  color: var(--accent);
+  background: rgba(196, 153, 60, 0.2);
 }
 
 .research-run-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: wait;
 }
 
+.research-progress {
+  margin-top: 0.75rem;
+}
+
+.research-progress-bar {
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent) 0%, rgba(196, 153, 60, 0.2) 50%, var(--accent) 100%);
+  background-size: 200% 100%;
+  animation: progress-sweep 2s ease-in-out infinite;
+  border-radius: 1px;
+}
+
+@keyframes progress-sweep {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
 .research-status-text {
-  margin: 0;
-  font-size: 0.75rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
   color: var(--accent);
 }
 
 .research-error {
   color: var(--score-very-weak);
+}
+
+.research-success {
+  color: var(--score-strong);
 }
 
 .research-aggregate-panel {
@@ -909,12 +973,12 @@ li:first-child {
 
 .verdict-card .summary {
   white-space: pre-line;
-  max-height: 10rem;
+  max-height: 14rem;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--surface-3) transparent;
-  font-size: 0.75rem;
-  line-height: 1.5;
+  font-size: 0.8125rem;
+  line-height: 1.6;
 }
 
 .verdict-section {
@@ -932,7 +996,7 @@ li:first-child {
 }
 
 .verdict-section ul {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
 }
 
 .research-consensus {
@@ -1009,7 +1073,17 @@ li:first-child {
   }
 }
 
+@media (max-width: 900px) {
+  .research-trigger-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 767px) {
+  .research-trigger-grid {
+    grid-template-columns: 1fr;
+  }
+
   .app-shell {
     padding: 1rem 0.75rem 3rem;
   }

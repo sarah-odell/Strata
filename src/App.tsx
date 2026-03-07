@@ -14,7 +14,7 @@ import {
 } from './lib/scoring'
 
 const strategies: Strategy[] = ['Buyout', 'Growth', 'Low-Risk Entry']
-type ViewMode = 'radar' | 'dealLab' | 'definitions' | 'research'
+type ViewMode = 'radar' | 'dealLab' | 'research'
 type RankingView = 'cards' | 'table'
 const scenarioOptions: { label: string; value: ScenarioCase }[] = [
   { label: 'Base Case', value: 'base' },
@@ -26,11 +26,6 @@ const dealSizeOptions: { label: string; value: DealSize }[] = [
   { label: '$250M-$1B EV', value: 'mid' },
   { label: '> $1B EV', value: 'large' },
 ]
-const dealSizeRanges: Record<DealSize, string> = {
-  small: 'Under $250M enterprise value',
-  mid: '$250M to $1B enterprise value',
-  large: 'Over $1B enterprise value',
-}
 const podiumLabels = ['1st place', '2nd place', '3rd place'] as const
 const scenarioLabel: Record<ScenarioCase, string> = {
   base: 'Base Case',
@@ -202,6 +197,43 @@ const countryAliases: Record<string, string> = {
   sweden: 'SE',
   poland: 'PL',
   indonesia: 'ID',
+  switzerland: 'CH',
+  swiss: 'CH',
+  denmark: 'DK',
+  norway: 'NO',
+  finland: 'FI',
+  ireland: 'IE',
+  austria: 'AT',
+  belgium: 'BE',
+  'czech republic': 'CZ',
+  czechia: 'CZ',
+  portugal: 'PT',
+  greece: 'GR',
+  hungary: 'HU',
+  turkey: 'TR',
+  turkiye: 'TR',
+  romania: 'RO',
+  china: 'CN',
+  'hong kong': 'HK',
+  hongkong: 'HK',
+  taiwan: 'TW',
+  vietnam: 'VN',
+  thailand: 'TH',
+  philippines: 'PH',
+  malaysia: 'MY',
+  'new zealand': 'NZ',
+  israel: 'IL',
+  qatar: 'QA',
+  'south africa': 'ZA',
+  nigeria: 'NG',
+  egypt: 'EG',
+  kenya: 'KE',
+  morocco: 'MA',
+  chile: 'CL',
+  colombia: 'CO',
+  argentina: 'AR',
+  peru: 'PE',
+  'costa rica': 'CR',
 }
 
 const inferTargetCountry = (prompt: string): string | null => {
@@ -508,13 +540,6 @@ function App() {
           onClick={() => setViewMode('dealLab')}
         >
           Deal Lab
-        </button>
-        <button
-          type="button"
-          className={viewMode === 'definitions' ? 'view-btn active' : 'view-btn'}
-          onClick={() => setViewMode('definitions')}
-        >
-          Industry Definitions
         </button>
         <button
           type="button"
@@ -983,47 +1008,76 @@ function App() {
         </>
       ) : viewMode === 'research' ? (
         <>
-          <section className="controls research-trigger">
-            <label>
-              Country
-              <select value={researchCountry} onChange={(e) => setResearchCountry(e.target.value)}>
-                {countryProfiles.map((c) => (
-                  <option key={c.code} value={c.code}>{c.name}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Sector
-              <select value={researchSector} onChange={(e) => setResearchSector(e.target.value)}>
-                {supportedSectors.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Strategy
-              <select value={researchStrategy} onChange={(e) => setResearchStrategy(e.target.value as Strategy)}>
-                {strategies.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </label>
-            <div className="research-actions">
-              <button
-                type="button"
-                className="research-run-btn"
-                onClick={triggerResearch}
-                disabled={researchStatus === 'running'}
-              >
-                {researchStatus === 'running' ? 'Agents working...' : 'Run Research Ensemble'}
-              </button>
-              {researchStatus === 'running' && (
-                <p className="research-status-text">5 analyst agents researching in parallel...</p>
-              )}
-              {researchStatus === 'failed' && (
-                <p className="research-status-text research-error">Research failed. Check backend logs.</p>
-              )}
+          <section className="research-hero">
+            <div className="research-hero-text">
+              <h2>AI Research Ensemble</h2>
+              <p>
+                Deploy 5 specialist AI analysts — macro-economist, regulatory analyst, deal execution specialist,
+                geopolitical risk analyst, and sector specialist — to independently research any market.
+                Each agent searches live data sources, synthesizes findings, and scores the opportunity.
+                Results are aggregated into a consensus view with full source citations.
+              </p>
             </div>
+            <div className="research-hero-agents">
+              <span className="agent-pip">Macro</span>
+              <span className="agent-pip">Regulatory</span>
+              <span className="agent-pip">Deal Exec</span>
+              <span className="agent-pip">Geopolitical</span>
+              <span className="agent-pip">Sector</span>
+            </div>
+          </section>
+
+          <section className="research-trigger-panel">
+            <p className="weights-title">New Research</p>
+            <p className="prompt-subtitle">Select a market, sector, and strategy to deploy the research ensemble.</p>
+            <div className="research-trigger-grid">
+              <label>
+                Market
+                <select value={researchCountry} onChange={(e) => setResearchCountry(e.target.value)}>
+                  {countryProfiles.map((c) => (
+                    <option key={c.code} value={c.code}>{c.name} ({c.code})</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Sector
+                <select value={researchSector} onChange={(e) => setResearchSector(e.target.value)}>
+                  {supportedSectors.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Strategy
+                <select value={researchStrategy} onChange={(e) => setResearchStrategy(e.target.value as Strategy)}>
+                  {strategies.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </label>
+              <div className="research-trigger-action">
+                <button
+                  type="button"
+                  className="research-run-btn"
+                  onClick={triggerResearch}
+                  disabled={researchStatus === 'running'}
+                >
+                  {researchStatus === 'running' ? 'Agents working...' : 'Deploy Research Ensemble'}
+                </button>
+              </div>
+            </div>
+            {researchStatus === 'running' && (
+              <div className="research-progress">
+                <div className="research-progress-bar" />
+                <p className="research-status-text">5 AI analyst agents researching in parallel — this typically takes 2-4 minutes...</p>
+              </div>
+            )}
+            {researchStatus === 'failed' && (
+              <p className="research-status-text research-error">Research failed. Ensure the backend server is running on port 8787.</p>
+            )}
+            {researchStatus === 'completed' && !selectedResearch && (
+              <p className="research-status-text research-success">Research complete. Select a result below to view the full report.</p>
+            )}
           </section>
 
           {selectedResearch ? (
@@ -1143,241 +1197,7 @@ function App() {
             </>
           )}
         </>
-      ) : (
-        <section className="definitions-panel">
-          <h3>Industry Definitions</h3>
-          <p>
-            These definitions standardize how sectors are used in screening and memo generation.
-          </p>
-
-          <article className="definition-card">
-            <h4>Deal Strategy Definitions</h4>
-            <p>
-              <strong>Buyout:</strong> Control-oriented acquisitions focused on operational improvement
-              and multiple pathways to value creation.
-            </p>
-            <p>
-              <strong>Growth:</strong> Expansion capital or minority-led strategies prioritizing
-              revenue scaling, market share capture, and capability buildout.
-            </p>
-            <p>
-              <strong>Low-Risk Entry:</strong> Capital deployment emphasizing downside protection,
-              stable policy environments, and lower execution volatility.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Scenario Case Definitions</h4>
-            <p>
-              <strong>Base Case:</strong> Most likely operating environment under current macro and
-              policy assumptions.
-            </p>
-            <p>
-              <strong>Bull Case:</strong> Upside environment where demand, execution, and policy
-              conditions are more favorable than baseline.
-            </p>
-            <p>
-              <strong>Bear Case:</strong> Downside environment with weaker growth, higher friction,
-              or elevated geopolitical/regulatory pressure.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Deal Size Definitions</h4>
-            <p>
-              <strong>Small Deal:</strong> {dealSizeRanges.small}
-            </p>
-            <p>
-              <strong>Mid Deal:</strong> {dealSizeRanges.mid}
-            </p>
-            <p>
-              <strong>Large Deal:</strong> {dealSizeRanges.large}
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Professional Services</h4>
-            <p>
-              B2B service-led businesses that primarily generate revenue through recurring contracts,
-              advisory, outsourced workflows, or managed delivery.
-            </p>
-            <p>
-              Includes: BPO, compliance/risk services, tech-enabled advisory, managed IT services,
-              data and analytics services.
-            </p>
-            <p>
-              Excludes: consumer services and pure software license businesses without service-led
-              delivery.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Healthcare Services</h4>
-            <p>
-              Service providers operating in care delivery, diagnostics, care enablement, and
-              healthcare operations support.
-            </p>
-            <p>
-              Includes: provider platforms, diagnostics/labs, care management, revenue cycle and
-              payer-support services.
-            </p>
-            <p>
-              Excludes: pure biotech/pharma R&amp;D and medical device manufacturing.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Industrial Technology</h4>
-            <p>
-              Industrial and infrastructure-adjacent technology businesses with hardware, software,
-              and automation capabilities embedded in operations.
-            </p>
-            <p>
-              Includes: automation systems, industrial software, advanced manufacturing technology,
-              and process optimization solutions.
-            </p>
-            <p>
-              Excludes: low-tech commoditized manufacturing without differentiated technology IP.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Aerospace &amp; Defense</h4>
-            <p>
-              Defense, aerospace, and dual-use technology businesses serving government and
-              mission-critical commercial programs.
-            </p>
-            <p>
-              Includes: defense electronics, aerospace systems, secure communications, MRO,
-              simulation/training, and certified mission software.
-            </p>
-            <p>
-              Excludes: non-compliant suppliers without required certifications, export-control
-              readiness, or government contracting capability.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Software &amp; Data Services</h4>
-            <p>
-              Software-led and data-intensive businesses delivering mission-critical workflows,
-              analytics, and recurring subscription or usage-based products.
-            </p>
-            <p>
-              Includes: vertical SaaS, workflow software, data infrastructure, applied AI tooling,
-              and enterprise information services.
-            </p>
-            <p>
-              Excludes: ad-dependent consumer apps and non-differentiated IT resale businesses.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Financial Services</h4>
-            <p>
-              Regulated and adjacent financial platforms delivering payments, lending, insurance,
-              wealth, and capital markets enablement.
-            </p>
-            <p>
-              Includes: specialty finance, payments infrastructure, wealth operations, reg-tech,
-              and risk/compliance platforms.
-            </p>
-            <p>
-              Excludes: highly speculative trading-led models without durable operating earnings.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Energy &amp; Infrastructure</h4>
-            <p>
-              Businesses that build, operate, or service critical energy, utilities, transport, and
-              core infrastructure systems.
-            </p>
-            <p>
-              Includes: grid and transmission services, distributed energy, utility services,
-              environmental infrastructure, and operations technology.
-            </p>
-            <p>
-              Excludes: pure commodity exposure without defensible operating capabilities.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Consumer &amp; Retail</h4>
-            <p>
-              Consumer-facing brands and retail platforms with repeat demand, pricing discipline,
-              and scalable multichannel distribution.
-            </p>
-            <p>
-              Includes: specialty retail, consumer health/wellness, digitally enabled commerce, and
-              franchise-like service chains.
-            </p>
-            <p>
-              Excludes: trend-dependent low-moat products with weak retention or margin durability.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Logistics &amp; Transportation</h4>
-            <p>
-              Businesses enabling goods movement, distribution, and supply chain reliability across
-              domestic and cross-border networks.
-            </p>
-            <p>
-              Includes: contract logistics, freight forwarding, transport software, warehouse
-              automation, and last-mile optimization.
-            </p>
-            <p>
-              Excludes: pure commodity shipping exposure without differentiated service capabilities.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Education &amp; Training</h4>
-            <p>
-              Platforms and service providers delivering workforce, professional, and institutional
-              learning outcomes with recurring demand.
-            </p>
-            <p>
-              Includes: vocational training, corporate learning platforms, assessment systems, and
-              compliance training solutions.
-            </p>
-            <p>
-              Excludes: unaccredited, low-completion models without measurable learner outcomes.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Real Estate &amp; Built Environment</h4>
-            <p>
-              Businesses tied to property operations, facility performance, and built-environment
-              modernization.
-            </p>
-            <p>
-              Includes: property technology, facility services, construction-adjacent services, and
-              asset operations platforms.
-            </p>
-            <p>
-              Excludes: pure land speculation and highly cyclical assets without operating leverage.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Food &amp; Agriculture</h4>
-            <p>
-              Businesses in food value chains and agricultural systems with defensible processing,
-              distribution, and compliance capabilities.
-            </p>
-            <p>
-              Includes: food processing, agri-services, specialty inputs, cold-chain infrastructure,
-              and traceability software.
-            </p>
-            <p>
-              Excludes: undifferentiated commodity exposure lacking value-added operations.
-            </p>
-          </article>
-        </section>
-      )}
+      ) : null}
     </main>
   )
 }
