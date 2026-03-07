@@ -896,18 +896,36 @@ li:first-child {
   gap: 0.75rem;
 }
 
+.verdict-card .score {
+  font-size: 1.25rem;
+}
+
 .verdict-card .summary {
   white-space: pre-line;
-  max-height: 12rem;
+  max-height: 10rem;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--surface-3) transparent;
+  font-size: 0.75rem;
+  line-height: 1.5;
 }
 
 .verdict-section {
   margin-top: 0.5rem;
   border-top: 1px solid var(--border);
   padding-top: 0.5rem;
+}
+
+.verdict-section .detail-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.verdict-section ul {
+  font-size: 0.75rem;
 }
 
 .research-consensus {

@@ -936,7 +936,7 @@ function App() {
                         y={labelPos.y}
                         textAnchor={textAnchor}
                         dominantBaseline="middle"
-                        fill="rgba(255,255,255,0.35)"
+                        fill="rgba(255,255,255,0.5)"
                         fontSize="10"
                         fontFamily="Inter, system-ui, sans-serif"
                       >
@@ -952,6 +952,19 @@ function App() {
                   stroke="rgba(196, 153, 60, 0.85)"
                   strokeWidth="1.5"
                 />
+
+                {radarMetrics.map((metric, index) => {
+                  const pt = radarPoint(index, radarMetrics.length, metric.value, radarCenter, radarCenter, radarRadius)
+                  return (
+                    <circle
+                      key={`dot-${index}`}
+                      cx={pt.x}
+                      cy={pt.y}
+                      r="3"
+                      fill="rgba(196, 153, 60, 0.9)"
+                    />
+                  )
+                })}
               </svg>
 
               <div className="radar-legend">
@@ -1046,11 +1059,11 @@ function App() {
                     <div className="top-row">
                       <div>
                         <p className="country-code">{personaLabel(v.persona)}</p>
-                        <h4>Score {v.score}</h4>
                       </div>
                       <div className="score-stack">
+                        <p className="score">{v.score}</p>
                         <p className={badgeClass(v.recommendation)}>{v.recommendation}</p>
-                        <p className="meta">Confidence {Math.round(v.confidence * 100)}%</p>
+                        <p className="meta">{Math.round(v.confidence * 100)}% confidence</p>
                       </div>
                     </div>
 
