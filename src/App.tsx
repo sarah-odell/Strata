@@ -101,6 +101,18 @@ function App() {
             </p>
           </section>
 
+          <section className="weights-panel">
+            <p className="weights-title">Current factor weights ({strategy})</p>
+            <div className="weights-grid">
+              {strategyWeights[strategy].map((factor) => (
+                <div key={`weight-${factor.key}`} className="weight-chip">
+                  <p>{factorLabel(factor.key)}</p>
+                  <span>{Math.round(factor.weight * 100)}% · {factor.invert ? 'Lower is better' : 'Higher is better'}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
           <section className="top-three-grid">
             {topThree.map((profile, index) => (
               <article key={`top-${profile.code}`} className="top-market-card">
