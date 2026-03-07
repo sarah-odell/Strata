@@ -30,6 +30,27 @@
   margin: 0;
 }
 
+.view-switch {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.view-btn {
+  border: 1px solid #9ebad2;
+  border-radius: 999px;
+  background: #f4f9ff;
+  color: #174868;
+  padding: 0.45rem 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.view-btn.active {
+  border-color: #1f5f89;
+  background: #dbeeff;
+}
+
 .controls {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
@@ -190,6 +211,28 @@ ul {
 
 .citation-group a {
   color: #005d95;
+}
+
+.definitions-panel {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.definitions-panel > p {
+  margin: 0;
+}
+
+.definition-card {
+  border: 1px solid #b8d2e8;
+  border-radius: 14px;
+  padding: 1rem;
+  background: #ffffff;
+  box-shadow: 0 6px 22px rgba(19, 60, 94, 0.09);
+}
+
+.definition-card p {
+  margin: 0.45rem 0 0;
 }
 
 .meta {

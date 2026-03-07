@@ -38,6 +38,11 @@ Factors:
 - Geopolitical risk
 - Deal execution risk
 
+Industry coverage labels:
+- Professional Services
+- Healthcare Services
+- Industrial Technology
+
 Strategies:
 - `Buyout`
 - `Growth`
