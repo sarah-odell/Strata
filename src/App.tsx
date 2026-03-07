@@ -368,10 +368,8 @@ function App() {
 
   const topThree = ranked.slice(0, 3)
   const trackedCountries = ranked.length
-  const radarProfile = targetCountryProfile ?? tailoredRanked[0] ?? ranked[0]
-  const radarContextLabel = targetCountryProfile
-    ? `Prompt target market: ${targetCountryProfile.name}`
-    : `Top tailored market: ${radarProfile.name}`
+  const radarProfile = tailoredRanked[0] ?? ranked[0]
+  const radarContextLabel = `#1 tailored recommendation: ${radarProfile.name}`
   const radarMetrics = dealProfileMetrics(radarProfile)
   const radarSize = 320
   const radarCenter = radarSize / 2
