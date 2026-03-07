@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import './App.css'
 import { countryProfiles, supportedSectors, type FactorKey } from './data/countries'
 import {
+  type DealSize,
   rankCountries,
   strategyWeights,
   type ScenarioCase,
@@ -15,6 +16,11 @@ const scenarioOptions: { label: string; value: ScenarioCase }[] = [
   { label: 'Base Case', value: 'base' },
   { label: 'Bull Case', value: 'bull' },
   { label: 'Bear Case', value: 'bear' },
+]
+const dealSizeOptions: { label: string; value: DealSize }[] = [
+  { label: 'Small Deal', value: 'small' },
+  { label: 'Mid Deal', value: 'mid' },
+  { label: 'Large Deal', value: 'large' },
 ]
 const podiumLabels = ['1st place', '2nd place', '3rd place'] as const
 
@@ -50,11 +56,12 @@ function App() {
   const [sector, setSector] = useState<string>(supportedSectors[0])
   const [strategy, setStrategy] = useState<Strategy>('Buyout')
   const [scenarioCase, setScenarioCase] = useState<ScenarioCase>('base')
+  const [dealSize, setDealSize] = useState<DealSize>('mid')
   const [expandedCountryCode, setExpandedCountryCode] = useState<string | null>('US')
 
   const ranked = useMemo(
-    () => rankCountries(countryProfiles, sector, strategy, scenarioCase),
-    [sector, strategy, scenarioCase],
+    () => rankCountries(countryProfiles, sector, strategy, scenarioCase, dealSize),
+    [sector, strategy, scenarioCase, dealSize],
   )
 
   const topThree = ranked.slice(0, 3)
@@ -130,11 +137,25 @@ function App() {
             ))}
           </section>
 
+          <section className="scenario-toggle">
+            {dealSizeOptions.map((sizeOption) => (
+              <button
+                key={sizeOption.value}
+                type="button"
+                className={dealSize === sizeOption.value ? 'scenario-btn active' : 'scenario-btn'}
+                onClick={() => setDealSize(sizeOption.value)}
+              >
+                {sizeOption.label}
+              </button>
+            ))}
+          </section>
+
           <section className="grid-header">
             <h3>Country ranking ({trackedCountries} markets)</h3>
             <p>
               Overall score = 35% sector fit + 65% weighted risk-adjusted country factors for{' '}
-              <strong>{strategy}</strong> · <strong>{scenarioOptions.find((s) => s.value === scenarioCase)?.label}</strong>
+              <strong>{strategy}</strong> · <strong>{scenarioOptions.find((s) => s.value === scenarioCase)?.label}</strong> ·{' '}
+              <strong>{dealSizeOptions.find((d) => d.value === dealSize)?.label}</strong>
             </p>
           </section>
 

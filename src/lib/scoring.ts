@@ -2,6 +2,7 @@ import { type CountryProfile, type FactorKey } from '../data/countries'
 
 export type Strategy = 'Buyout' | 'Growth' | 'Low-Risk Entry'
 export type ScenarioCase = 'base' | 'bull' | 'bear'
+export type DealSize = 'small' | 'mid' | 'large'
 
 export type FactorWeight = {
   key: FactorKey
@@ -60,11 +61,37 @@ export type ScoredCountry = CountryProfile & {
   recommendation: 'Go' | 'Maybe' | 'Avoid'
   scenarioScore: number
   scenarioRecommendation: 'Go' | 'Maybe' | 'Avoid'
+  dealSizeAdjustment: number
   scenarios: {
     base: number
     bull: number
     bear: number
   }
+}
+
+const clamp = (value: number, min: number, max: number): number =>
+  Math.max(min, Math.min(max, value))
+
+const dealSizeAdjustment = (profile: CountryProfile, dealSize: DealSize): number => {
+  if (dealSize === 'mid') {
+    return 0
+  }
+
+  if (dealSize === 'small') {
+    const lowFrictionScore =
+      ((100 - profile.factors.regulatoryComplexity) +
+        (100 - profile.factors.dealExecutionRisk) +
+        (100 - profile.factors.taxTariffFriction)) /
+      3
+    return Math.round(clamp((lowFrictionScore - 50) / 8, -6, 6))
+  }
+
+  const scaleScore =
+    profile.factors.economicStrength * 0.55 +
+    (100 - profile.factors.geopoliticalRisk) * 0.25 +
+    (100 - profile.factors.taxTariffFriction) * 0.2
+
+  return Math.round(clamp((scaleScore - 50) / 8, -6, 6))
 }
 
 const scoreBucket = (
@@ -89,6 +116,7 @@ export const scoreCountry = (
   sector: string,
   strategy: Strategy,
   scenarioCase: ScenarioCase = 'base',
+  dealSize: DealSize = 'mid',
 ): ScoredCountry => {
   const sectorScore = profile.sectorFit[sector] ?? 0
   const weightedFactorScore = strategyWeights[strategy].reduce((acc, factor) => {
@@ -106,7 +134,8 @@ export const scoreCountry = (
     bear: Math.max(0, overallScore - 9),
   }
 
-  const scenarioScore = scenarios[scenarioCase]
+  const sizeAdjustment = dealSizeAdjustment(profile, dealSize)
+  const scenarioScore = clamp(scenarios[scenarioCase] + sizeAdjustment, 0, 100)
 
   return {
     ...profile,
@@ -116,6 +145,7 @@ export const scoreCountry = (
     recommendation: scoreBucket(overallScore, strategy),
     scenarioScore,
     scenarioRecommendation: scoreBucket(scenarioScore, strategy),
+    dealSizeAdjustment: sizeAdjustment,
     scenarios: {
       base: scenarios.base,
       bull: scenarios.bull,
@@ -129,8 +159,9 @@ export const rankCountries = (
   sector: string,
   strategy: Strategy,
   scenarioCase: ScenarioCase = 'base',
+  dealSize: DealSize = 'mid',
 ): ScoredCountry[] => {
   return profiles
-    .map((profile) => scoreCountry(profile, sector, strategy, scenarioCase))
+    .map((profile) => scoreCountry(profile, sector, strategy, scenarioCase, dealSize))
     .sort((a, b) => b.scenarioScore - a.scenarioScore)
 }
