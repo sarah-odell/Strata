@@ -32,6 +32,7 @@ function App() {
     [sector, strategy],
   )
 
+  const topThree = ranked.slice(0, 3)
   const trackedCountries = ranked.length
 
   return (
@@ -99,12 +100,25 @@ function App() {
             </p>
           </section>
 
+          <section className="top-three-grid">
+            {topThree.map((profile, index) => (
+              <article key={`top-${profile.code}`} className="top-market-card">
+                <p className="top-rank">Top {index + 1}</p>
+                <h4>{profile.name}</h4>
+                <p className="region">{profile.region}</p>
+                <p className="top-score">Score {profile.overallScore}</p>
+                <p className={badgeClass(profile.recommendation)}>{profile.recommendation}</p>
+              </article>
+            ))}
+          </section>
+
           <section className="country-grid">
-            {ranked.map((profile) => {
+            {ranked.map((profile, index) => {
               const expanded = expandedCountryCode === profile.code
+              const isTopThree = index < 3
 
               return (
-                <article key={profile.code} className="country-card">
+                <article key={profile.code} className={isTopThree ? 'country-card is-top' : 'country-card'}>
                   <div className="top-row">
                     <div>
                       <p className="country-code">{profile.code}</p>
@@ -112,6 +126,7 @@ function App() {
                       <p className="region">{profile.region}</p>
                     </div>
                     <div className="score-stack">
+                      <p className="rank-pill">#{index + 1}</p>
                       <p className="score">{profile.overallScore}</p>
                       <p className={badgeClass(profile.recommendation)}>{profile.recommendation}</p>
                     </div>
