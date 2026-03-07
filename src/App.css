@@ -291,17 +291,13 @@ input:focus {
 /* --- Weights chips --- */
 
 .weights-grid {
-  margin-top: 0.625rem;
-  display: flex;
-  flex-wrap: nowrap;
+  margin-top: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 0.375rem;
-  overflow-x: auto;
-  padding-bottom: 0.125rem;
 }
 
 .weight-chip {
-  flex: 0 0 auto;
-  min-width: 160px;
   border: 1px solid var(--border);
   border-radius: 4px;
   background: var(--surface-0);

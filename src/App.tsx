@@ -495,7 +495,7 @@ function App() {
         <p className="hero-meta">{countryProfiles.length} markets · {countryProfiles[0]?.lastUpdated}</p>
       </header>
 
-      <section className="view-switch">
+      <nav className="view-switch">
         <button
           type="button"
           className={viewMode === 'radar' ? 'view-btn active' : 'view-btn'}
@@ -524,7 +524,7 @@ function App() {
         >
           Research
         </button>
-      </section>
+      </nav>
 
       {viewMode === 'radar' ? (
         <>
@@ -581,13 +581,9 @@ function App() {
           <section className="grid-header">
             <div className="grid-header-top">
               <div>
-                <h3>Country ranking ({trackedCountries} markets)</h3>
+                <h3>Country Ranking</h3>
                 <p>
-                  Overall score = 35% sector fit + 65% weighted risk-adjusted country factors for{' '}
-                  <strong>{strategy}</strong> ·{' '}
-                  <strong>{scenarioOptions.find((s) => s.value === scenarioCase)?.label}</strong> ·{' '}
-                  <strong>{dealSizeOptions.find((d) => d.value === dealSize)?.label}</strong> + portfolio
-                  adjacency overlay
+                  {trackedCountries} markets · {strategy} · {scenarioOptions.find((s) => s.value === scenarioCase)?.label} · {dealSizeOptions.find((d) => d.value === dealSize)?.label}
                 </p>
               </div>
               <div className="ranking-view-toggle">
@@ -627,7 +623,7 @@ function App() {
                 <p className="top-rank">{podiumLabels[index] ?? `${index + 1}th place`}</p>
                 <h4>{profile.name}</h4>
                 <p className="region">{profile.region}</p>
-                <p className="top-score">Score {profile.scenarioScore}</p>
+                <p className="top-score">{profile.scenarioScore}</p>
                 <p className={badgeClass(profile.scenarioRecommendation)}>
                   {profile.scenarioRecommendation}
                 </p>
@@ -874,7 +870,7 @@ function App() {
                 <article key={`tailored-${profile.code}`} className="prompt-result-card">
                   <p className="top-rank">{podiumLabels[index]}</p>
                   <h4>{profile.name}</h4>
-                  <p className="top-score">Score {profile.scenarioScore}</p>
+                  <p className="top-score">{profile.scenarioScore}</p>
                   <p className={badgeClass(profile.scenarioRecommendation)}>{profile.scenarioRecommendation}</p>
                   <p className="summary">
                     Why: strong {topStrengths(profile, promptAssumptions.strategy).join(' + ')} under{' '}
@@ -1139,7 +1135,7 @@ function App() {
                       <p className="top-rank">{r.countryCode}</p>
                       <h4>{r.country}</h4>
                       <p className="region">{r.sector} · {r.strategy}</p>
-                      <p className="top-score">Score {r.aggregateScore}</p>
+                      <p className="top-score">{r.aggregateScore}</p>
                       <p className={badgeClass(r.aggregateRecommendation)}>{r.aggregateRecommendation}</p>
                       <p className={`research-consensus consensus-${r.consensus}`}>{r.consensus} consensus</p>
                       <p className="meta">{new Date(r.runAt).toLocaleDateString()}</p>
