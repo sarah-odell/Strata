@@ -8,6 +8,11 @@ export type FactorWeight = {
   invert: boolean
 }
 
+type RecommendationThreshold = {
+  goMin: number
+  maybeMin: number
+}
+
 export const strategyWeights: Record<Strategy, FactorWeight[]> = {
   Buyout: [
     { key: 'economicStrength', weight: 0.3, invert: false },
@@ -32,6 +37,21 @@ export const strategyWeights: Record<Strategy, FactorWeight[]> = {
   ],
 }
 
+const strategyRecommendationThresholds: Record<Strategy, RecommendationThreshold> = {
+  Buyout: {
+    goMin: 58,
+    maybeMin: 50,
+  },
+  Growth: {
+    goMin: 55,
+    maybeMin: 48,
+  },
+  'Low-Risk Entry': {
+    goMin: 60,
+    maybeMin: 50,
+  },
+}
+
 export type ScoredCountry = CountryProfile & {
   sectorScore: number
   weightedFactorScore: number
@@ -44,12 +64,17 @@ export type ScoredCountry = CountryProfile & {
   }
 }
 
-const scoreBucket = (score: number): ScoredCountry['recommendation'] => {
-  if (score >= 65) {
+const scoreBucket = (
+  score: number,
+  strategy: Strategy,
+): ScoredCountry['recommendation'] => {
+  const threshold = strategyRecommendationThresholds[strategy]
+
+  if (score >= threshold.goMin) {
     return 'Go'
   }
 
-  if (score >= 45) {
+  if (score >= threshold.maybeMin) {
     return 'Maybe'
   }
 
@@ -76,7 +101,7 @@ export const scoreCountry = (
     sectorScore,
     weightedFactorScore: Math.round(weightedFactorScore),
     overallScore,
-    recommendation: scoreBucket(overallScore),
+    recommendation: scoreBucket(overallScore, strategy),
     scenarios: {
       base: overallScore,
       upside: Math.min(100, overallScore + 6),
