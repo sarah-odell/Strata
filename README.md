@@ -42,6 +42,7 @@ Industry coverage labels:
 - Professional Services
 - Healthcare Services
 - Industrial Technology
+- Defense / A&D
 
 Strategies:
 - `Buyout`
@@ -52,6 +53,11 @@ Deal strategy definitions:
 - `Buyout`: Control-oriented acquisitions focused on operational improvement and multiple value-creation levers.
 - `Growth`: Expansion capital or minority-led strategies emphasizing revenue scaling, market share capture, and capability buildout.
 - `Low-Risk Entry`: Capital deployment emphasizing downside protection, stable policy environments, and lower execution volatility.
+
+Defense / A&D definition:
+- Defense, aerospace, and dual-use technology businesses serving government and mission-critical commercial programs.
+- Includes defense electronics, aerospace systems, secure communications, MRO, simulation/training, and certified mission software.
+- Excludes suppliers without required certifications, export-control readiness, or government contracting capability.
 
 ## Local development
 Install:

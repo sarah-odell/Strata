@@ -13,6 +13,19 @@
     linear-gradient(145deg, rgba(255, 255, 255, 0.84) 0%, rgba(237, 246, 255, 0.86) 58%, rgba(229, 248, 238, 0.8) 100%);
   box-shadow: 0 14px 36px rgba(18, 53, 82, 0.12);
   backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  right: -70px;
+  top: -70px;
+  background: radial-gradient(circle, rgba(51, 133, 181, 0.2) 0%, rgba(51, 133, 181, 0) 68%);
+  pointer-events: none;
 }
 
 .eyebrow {
@@ -114,14 +127,14 @@ select {
   border-radius: 18px;
   padding: 1.04rem;
   background: var(--surface-strong);
-  box-shadow: 0 10px 26px rgba(18, 53, 82, 0.1);
+  box-shadow: 0 8px 20px rgba(18, 53, 82, 0.08);
   backdrop-filter: blur(8px);
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
 .country-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 16px 32px rgba(18, 53, 82, 0.14);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(18, 53, 82, 0.12);
 }
 
 .top-row {
@@ -262,7 +275,7 @@ ul {
   border-radius: 18px;
   padding: 1.05rem;
   background: var(--surface-strong);
-  box-shadow: 0 10px 26px rgba(18, 53, 82, 0.1);
+  box-shadow: 0 8px 20px rgba(18, 53, 82, 0.08);
 }
 
 .definition-card p {

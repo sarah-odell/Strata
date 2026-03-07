@@ -243,6 +243,22 @@ function App() {
               Excludes: low-tech commoditized manufacturing without differentiated technology IP.
             </p>
           </article>
+
+          <article className="definition-card">
+            <h4>Defense / A&amp;D</h4>
+            <p>
+              Defense, aerospace, and dual-use technology businesses serving government and
+              mission-critical commercial programs.
+            </p>
+            <p>
+              Includes: defense electronics, aerospace systems, secure communications, MRO,
+              simulation/training, and certified mission software.
+            </p>
+            <p>
+              Excludes: non-compliant suppliers without required certifications, export-control
+              readiness, or government contracting capability.
+            </p>
+          </article>
         </section>
       )}
     </main>
