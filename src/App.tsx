@@ -402,6 +402,7 @@ function App() {
   const [researchStatus, setResearchStatus] = useState<'idle' | 'running' | 'completed' | 'failed'>('idle')
   const [researchResults, setResearchResults] = useState<ResearchResult[]>([])
   const [selectedResearch, setSelectedResearch] = useState<ResearchResult | null>(null)
+  const [batchStatus, setBatchStatus] = useState<{ total: number; completed: number; running: boolean }>({ total: 0, completed: 0, running: false })
 
   const regionOptions = useMemo(
     () => Array.from(new Set(countryProfiles.map((profile) => profile.region))),
@@ -502,6 +503,49 @@ function App() {
     }
   }
 
+  const triggerBatchScan = async (marketCodes: string[]) => {
+    const markets = marketCodes.map((code) => ({
+      countryCode: code,
+      country: countryProfiles.find((c) => c.code === code)?.name ?? code,
+    }))
+    setBatchStatus({ total: markets.length, completed: 0, running: true })
+    try {
+      const response = await fetch(`${backendUrl}/api/research/batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          markets,
+          sector: researchSector,
+          strategy: researchStrategy,
+        }),
+      })
+      const { jobs } = await response.json()
+      const jobIds = jobs.map((j: { jobId: string }) => j.jobId)
+
+      const poll = setInterval(async () => {
+        let done = 0
+        let allDone = true
+        for (const jobId of jobIds) {
+          try {
+            const jobRes = await fetch(`${backendUrl}/api/research/jobs/${jobId}`)
+            const job = await jobRes.json()
+            if (job.status !== 'running') done++
+            else allDone = false
+          } catch {
+            done++
+          }
+        }
+        setBatchStatus((prev) => ({ ...prev, completed: done }))
+        if (allDone) {
+          clearInterval(poll)
+          setBatchStatus((prev) => ({ ...prev, running: false }))
+          loadResearchResults()
+        }
+      }, 8000)
+    } catch {
+      setBatchStatus({ total: 0, completed: 0, running: false })
+    }
+  }
 
   const applyPromptDrivenSelections = (nextPrompt: string, nextFundSizeInput: string) => {
     const inferred = inferAssumptions(nextPrompt, nextFundSizeInput, {
@@ -1078,6 +1122,43 @@ function App() {
             {researchStatus === 'completed' && !selectedResearch && (
               <p className="research-status-text research-success">Research complete. Select a result below to view the full report.</p>
             )}
+            <div className="research-batch-section">
+              <p className="batch-label">Or scan multiple markets at once:</p>
+              <div className="batch-actions">
+                <button
+                  type="button"
+                  className="scenario-btn"
+                  disabled={batchStatus.running}
+                  onClick={() => triggerBatchScan(ranked.slice(0, 5).map((c) => c.code))}
+                >
+                  Top 5 Markets
+                </button>
+                <button
+                  type="button"
+                  className="scenario-btn"
+                  disabled={batchStatus.running}
+                  onClick={() => triggerBatchScan(ranked.slice(0, 10).map((c) => c.code))}
+                >
+                  Top 10 Markets
+                </button>
+                <button
+                  type="button"
+                  className="scenario-btn"
+                  disabled={batchStatus.running}
+                  onClick={() => triggerBatchScan(countryProfiles.map((c) => c.code))}
+                >
+                  All {countryProfiles.length} Markets
+                </button>
+              </div>
+              {batchStatus.running && (
+                <div className="research-progress">
+                  <div className="research-progress-bar" />
+                  <p className="research-status-text">
+                    Batch scan: {batchStatus.completed}/{batchStatus.total} markets complete...
+                  </p>
+                </div>
+              )}
+            </div>
           </section>
 
           {selectedResearch ? (

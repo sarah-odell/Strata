@@ -149,6 +149,54 @@ app.get('/api/research/jobs/:id', (req, res) => {
   res.json({ id: req.params.id, ...job })
 })
 
+app.post('/api/research/batch', (req, res) => {
+  const { markets, sector, strategy, model, personas } = req.body
+  if (!markets || !Array.isArray(markets) || !sector || !strategy) {
+    res.status(400).json({ error: 'markets (array of {countryCode, country}), sector, and strategy are required.' })
+    return
+  }
+
+  const batchId = `batch-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`
+  const jobs = []
+
+  for (const market of markets) {
+    const jobId = `${batchId}-${market.countryCode}`
+    const args = [
+      '--import', 'tsx/esm', 'research/run.ts',
+      '--country', market.countryCode,
+      '--country-name', market.country,
+      '--sector', sector,
+      '--strategy', strategy,
+    ]
+    if (model) args.push('--model', model)
+    if (personas) args.push('--personas', personas)
+
+    const childEnv = { ...process.env }
+    delete childEnv.CLAUDECODE
+
+    const proc = spawn('node', args, {
+      cwd: rootDir,
+      env: childEnv,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+
+    const job = { status: 'running', startedAt: new Date().toISOString(), countryCode: market.countryCode, country: market.country, sector, strategy }
+    researchJobs.set(jobId, job)
+
+    let stderr = ''
+    proc.stderr.on('data', (d) => { stderr += d.toString() })
+    proc.on('close', (code) => {
+      job.status = code === 0 ? 'completed' : 'failed'
+      job.completedAt = new Date().toISOString()
+      if (code !== 0) job.error = stderr.slice(0, 2000)
+    })
+
+    jobs.push({ jobId, countryCode: market.countryCode, country: market.country })
+  }
+
+  res.status(202).json({ batchId, jobs, totalMarkets: markets.length })
+})
+
 app.get('/api/research/results', async (_req, res) => {
   const resultsDir = path.join(rootDir, '.strata', 'research')
   try {
