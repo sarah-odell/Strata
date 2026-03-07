@@ -1033,6 +1033,43 @@ li:first-child {
   border-radius: 6px;
 }
 
+.backend-config {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-0);
+}
+
+.backend-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.backend-status {
+  margin: 0;
+  font-size: 0.8125rem;
+}
+
+.backend-status-online {
+  color: var(--score-strong);
+}
+
+.backend-status-checking {
+  color: var(--accent);
+}
+
+.backend-status-offline {
+  color: var(--score-very-weak);
+}
+
+.backend-status-unknown {
+  color: var(--text-tertiary);
+}
+
 .research-prompt-display {
   margin: 0.5rem 0 0;
   padding: 0.625rem 0.75rem;

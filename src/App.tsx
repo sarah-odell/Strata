@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 import { countryProfiles, supportedSectors, type FactorKey } from './data/countries'
 import {
@@ -97,7 +97,8 @@ const personaLabel = (id: string): string =>
     'sector-specialist': 'Sector Specialist',
   })[id] ?? id
 
-const backendUrl = 'http://localhost:8787'
+const DEFAULT_BACKEND_URL = 'http://localhost:8787'
+const BACKEND_URL_STORAGE_KEY = 'strata_backend_url'
 
 const factorLabel = (key: FactorKey): string =>
   key.replace(/([A-Z])/g, ' $1').replace(/^./, (letter) => letter.toUpperCase())
@@ -451,6 +452,15 @@ function App() {
   const [dealLabExportHistory, setDealLabExportHistory] = useState<DealLabExportEntry[]>(() =>
     loadDealLabExports(),
   )
+  const [backendUrlInput, setBackendUrlInput] = useState<string>(() => {
+    if (typeof window === 'undefined') {
+      return DEFAULT_BACKEND_URL
+    }
+    return window.localStorage.getItem(BACKEND_URL_STORAGE_KEY) || DEFAULT_BACKEND_URL
+  })
+  const [backendStatus, setBackendStatus] = useState<'unknown' | 'checking' | 'online' | 'offline'>(
+    'unknown',
+  )
 
   const regionOptions = useMemo(
     () => Array.from(new Set(countryProfiles.map((profile) => profile.region))),
@@ -501,6 +511,10 @@ function App() {
 
   const selectedTableProfile =
     sortedRanked.find((profile) => profile.code === selectedTableCountryCode) ?? sortedRanked[0] ?? null
+  const backendBaseUrl = useMemo(
+    () => backendUrlInput.trim().replace(/\/+$/g, '') || DEFAULT_BACKEND_URL,
+    [backendUrlInput],
+  )
 
   const promptAssumptions = useMemo(
     () => inferAssumptions(dealPrompt, fundSizeInput, { strategy, sector, scenarioCase, dealSize }),
@@ -536,17 +550,38 @@ function App() {
 
   const loadResearchResults = async () => {
     try {
-      const response = await fetch(`${backendUrl}/api/research/results`)
+      const response = await fetch(`${backendBaseUrl}/api/research/results`)
       const data = await response.json()
       setResearchResults(data.results ?? [])
     } catch { /* backend may not be running */ }
   }
 
+  const checkBackendConnection = async (baseUrl: string) => {
+    setBackendStatus('checking')
+    try {
+      const response = await fetch(`${baseUrl}/health`)
+      if (!response.ok) {
+        throw new Error('Health check failed')
+      }
+      setBackendStatus('online')
+      return true
+    } catch {
+      setBackendStatus('offline')
+      return false
+    }
+  }
+
+  useEffect(() => {
+    if (viewMode === 'research') {
+      checkBackendConnection(backendBaseUrl)
+    }
+  }, [viewMode, backendBaseUrl])
+
   const triggerResearch = async () => {
     const countryName = countryProfiles.find((c) => c.code === researchCountry)?.name ?? researchCountry
     setResearchStatus('running')
     try {
-      const response = await fetch(`${backendUrl}/api/research`, {
+      const response = await fetch(`${backendBaseUrl}/api/research`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -560,7 +595,7 @@ function App() {
       const { jobId } = await response.json()
       const poll = setInterval(async () => {
         try {
-          const jobRes = await fetch(`${backendUrl}/api/research/jobs/${jobId}`)
+          const jobRes = await fetch(`${backendBaseUrl}/api/research/jobs/${jobId}`)
           const job = await jobRes.json()
           if (job.status !== 'running') {
             clearInterval(poll)
@@ -584,7 +619,7 @@ function App() {
     }))
     setBatchStatus({ total: markets.length, completed: 0, running: true })
     try {
-      const response = await fetch(`${backendUrl}/api/research/batch`, {
+      const response = await fetch(`${backendBaseUrl}/api/research/batch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -602,7 +637,7 @@ function App() {
         let allDone = true
         for (const jobId of jobIds) {
           try {
-            const jobRes = await fetch(`${backendUrl}/api/research/jobs/${jobId}`)
+            const jobRes = await fetch(`${backendBaseUrl}/api/research/jobs/${jobId}`)
             const job = await jobRes.json()
             if (job.status !== 'running') done++
             else allDone = false
@@ -633,6 +668,13 @@ function App() {
     setSector(inferred.sector)
     setScenarioCase(inferred.scenarioCase)
     setDealSize(inferred.dealSize)
+  }
+
+  const saveBackendUrl = () => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(BACKEND_URL_STORAGE_KEY, backendBaseUrl)
+    }
+    checkBackendConnection(backendBaseUrl)
   }
 
   const createDealLabMemo = (): string => {
@@ -1340,6 +1382,31 @@ function App() {
 
           <section className="research-trigger-panel">
             <p className="weights-title">New Research</p>
+            <div className="backend-config">
+              <label>
+                Backend API URL
+                <input
+                  type="text"
+                  value={backendUrlInput}
+                  onChange={(e) => setBackendUrlInput(e.target.value)}
+                  placeholder={DEFAULT_BACKEND_URL}
+                />
+              </label>
+              <div className="backend-actions">
+                <button type="button" className="scenario-btn" onClick={saveBackendUrl}>
+                  Save & Check
+                </button>
+                <p className={`backend-status backend-status-${backendStatus}`}>
+                  {backendStatus === 'online'
+                    ? `Connected (${backendBaseUrl})`
+                    : backendStatus === 'checking'
+                      ? 'Checking backend...'
+                      : backendStatus === 'offline'
+                        ? `Not reachable (${backendBaseUrl})`
+                        : 'Connection not checked yet'}
+                </p>
+              </div>
+            </div>
             <p className="prompt-subtitle">Describe your deal thesis, research question, or investment focus. The AI analysts will use this as context for their research.</p>
             <label>
               Research prompt
@@ -1393,7 +1460,9 @@ function App() {
               </div>
             )}
             {researchStatus === 'failed' && (
-              <p className="research-status-text research-error">Research failed. Ensure the backend server is running on port 8787.</p>
+              <p className="research-status-text research-error">
+                Research failed. Ensure backend is reachable at {backendBaseUrl} (for local use run `npm run backend`).
+              </p>
             )}
             {researchStatus === 'completed' && !selectedResearch && (
               <p className="research-status-text research-success">Research complete. Select a result below to view the full report.</p>
