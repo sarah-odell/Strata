@@ -80,15 +80,22 @@ Overall score:
 - `65%` weighted country factors
 
 Factors:
-- Economic strength
+- Attractiveness:
+- Market size & depth
+- Market growth momentum
+- Customer density
+- Digital readiness
+- Strategic adjacency (modeled as portfolio adjacency overlay, `0` to `+8`)
+- Feasibility:
 - Regulatory complexity
+- Licensing complexity
+- Language barriers (execution proxy)
+- Competition intensity
+- Talent availability
+- Additional risk controls:
 - Tax/tariff friction
 - Geopolitical risk
 - Deal execution risk
-- Market size & depth
-- Market growth momentum
-- Market concentration risk
-- Portfolio adjacency overlay (0 to +8 points)
 
 Recommendation bands are strategy-specific (`Very strong`, `Strong`, `Moderate`, `Weak`, `Very weak`).
 
@@ -103,6 +110,10 @@ Key indicators used for the added market-structure factors:
 - `Market size & depth`: `NY.GDP.MKTP.CD`, `SP.POP.TOTL`, `FD.AST.PRVT.GD.ZS`
 - `Market growth momentum`: `NY.GDP.MKTP.KD.ZG`, `NY.GDP.PCAP.KD.ZG`, `BX.KLT.DINV.WD.GD.ZS`
 - `Market concentration risk`: `GFDD.OI.01`, `GFDD.OI.06`
+- `Customer density`: `EN.POP.DNST`, `SP.URB.TOTL.IN.ZS`, `SP.POP.TOTL`
+- `Digital readiness`: `IT.NET.USER.ZS`, `IT.NET.BBND.P2`
+- `Licensing complexity`: `RQ.EST` (regulatory quality estimate, inverted), with tax/tariff friction overlay
+- `Talent availability`: `SE.TER.ENRR`, `SL.UEM.TOTL.ZS`, and digital readiness
 
 Data transform and scoring logic live in:
 - `ingestion/update-indicators.mjs`

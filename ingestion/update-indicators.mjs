@@ -32,6 +32,13 @@ const wbIndicators = {
   privateCredit: 'FD.AST.PRVT.GD.ZS',
   bankConcentration3: 'GFDD.OI.01',
   bankConcentration5: 'GFDD.OI.06',
+  populationDensity: 'EN.POP.DNST',
+  urbanShare: 'SP.URB.TOTL.IN.ZS',
+  internetUsers: 'IT.NET.USER.ZS',
+  fixedBroadband: 'IT.NET.BBND.P2',
+  regulatoryQuality: 'RQ.EST',
+  tertiaryEnrollment: 'SE.TER.ENRR',
+  unemployment: 'SL.UEM.TOTL.ZS',
 }
 
 const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, value))
@@ -118,6 +125,53 @@ const scoreBankConcentrationRisk = (concentration) => {
   return clamp(92 + (concentration - 90) * 0.3)
 }
 
+const scorePopulationDensity = (density) => {
+  const logValue = Math.log10(Math.max(density, 1))
+  return clamp(((logValue - 1) / 3) * 100)
+}
+
+const scoreUrbanShare = (urbanShare) => {
+  if (urbanShare <= 30) return 20
+  if (urbanShare <= 55) return clamp(20 + (urbanShare - 30) * 1.5)
+  if (urbanShare <= 75) return clamp(57.5 + (urbanShare - 55) * 1.4)
+  if (urbanShare <= 90) return clamp(85.5 + (urbanShare - 75) * 0.6)
+  return 95
+}
+
+const scoreInternetUsers = (internetUsersPct) => {
+  if (internetUsersPct <= 30) return clamp(internetUsersPct * 0.9)
+  if (internetUsersPct <= 60) return clamp(27 + (internetUsersPct - 30) * 1.2)
+  if (internetUsersPct <= 85) return clamp(63 + (internetUsersPct - 60) * 1.0)
+  return clamp(88 + (internetUsersPct - 85) * 0.4)
+}
+
+const scoreFixedBroadband = (subsPer100) => {
+  if (subsPer100 <= 5) return clamp(subsPer100 * 4)
+  if (subsPer100 <= 20) return clamp(20 + (subsPer100 - 5) * 2)
+  if (subsPer100 <= 40) return clamp(50 + (subsPer100 - 20) * 1.2)
+  return clamp(74 + (subsPer100 - 40) * 0.8)
+}
+
+const scoreRegQualityToLicensingComplexity = (regQualityEstimate) => {
+  // WGI Regulatory Quality estimate usually spans roughly -2.5 to +2.5.
+  const normalizedQuality = clamp(((regQualityEstimate + 2.5) / 5) * 100)
+  return Math.round(100 - normalizedQuality)
+}
+
+const scoreTertiaryEnrollment = (enrollmentPct) => {
+  if (enrollmentPct <= 20) return clamp(enrollmentPct * 1.5)
+  if (enrollmentPct <= 50) return clamp(30 + (enrollmentPct - 20) * 1.2)
+  if (enrollmentPct <= 90) return clamp(66 + (enrollmentPct - 50) * 0.75)
+  return clamp(96 + (enrollmentPct - 90) * 0.2)
+}
+
+const scoreUnemploymentPenalty = (unemploymentPct) => {
+  if (unemploymentPct <= 4) return 10
+  if (unemploymentPct <= 7) return clamp(10 + (unemploymentPct - 4) * 7)
+  if (unemploymentPct <= 12) return clamp(31 + (unemploymentPct - 7) * 8)
+  return clamp(71 + (unemploymentPct - 12) * 3)
+}
+
 const latestValue = (rows) => {
   const point = rows.find((row) => row.value !== null && row.value !== undefined)
   return point?.value ?? null
@@ -177,6 +231,13 @@ const collectIndicatorValues = async () => {
         privateCredit,
         bankConcentration3,
         bankConcentration5,
+        populationDensity,
+        urbanShare,
+        internetUsers,
+        fixedBroadband,
+        regulatoryQuality,
+        tertiaryEnrollment,
+        unemployment,
       ] = await Promise.all([
         fetchWbSeries(iso3, wbIndicators.gdpCurrentUsd),
         fetchWbSeries(iso3, wbIndicators.population),
@@ -189,6 +250,13 @@ const collectIndicatorValues = async () => {
         fetchWbSeries(iso3, wbIndicators.privateCredit),
         fetchWbSeries(iso3, wbIndicators.bankConcentration3),
         fetchWbSeries(iso3, wbIndicators.bankConcentration5),
+        fetchWbSeries(iso3, wbIndicators.populationDensity),
+        fetchWbSeries(iso3, wbIndicators.urbanShare),
+        fetchWbSeries(iso3, wbIndicators.internetUsers),
+        fetchWbSeries(iso3, wbIndicators.fixedBroadband),
+        fetchWbSeries(iso3, wbIndicators.regulatoryQuality),
+        fetchWbSeries(iso3, wbIndicators.tertiaryEnrollment),
+        fetchWbSeries(iso3, wbIndicators.unemployment),
       ])
 
       const imfCountry = imfGrowthMap[iso3] || imfGrowthMap[code]
@@ -209,6 +277,13 @@ const collectIndicatorValues = async () => {
         privateCredit: Number(privateCredit ?? 0),
         bankConcentration3: Number(bankConcentration3 ?? 65),
         bankConcentration5: Number(bankConcentration5 ?? 75),
+        populationDensity: Number(populationDensity ?? 0),
+        urbanShare: Number(urbanShare ?? 0),
+        internetUsers: Number(internetUsers ?? 0),
+        fixedBroadband: Number(fixedBroadband ?? 0),
+        regulatoryQuality: Number(regulatoryQuality ?? 0),
+        tertiaryEnrollment: Number(tertiaryEnrollment ?? 0),
+        unemployment: Number(unemployment ?? 8),
       }
     }),
   )
@@ -238,13 +313,28 @@ const computeOverrides = (rows) => {
     )
 
     const marketGrowthMomentum = scoreGrowthMomentum(row.gdpGrowthTotal, row.gdpGrowthPerCapita, row.fdi)
+    const customerDensity = Math.round(
+      clamp(scorePopulationDensity(row.populationDensity) * 0.55 + scoreUrbanShare(row.urbanShare) * 0.45),
+    )
+    const digitalReadiness = Math.round(
+      clamp(scoreInternetUsers(row.internetUsers) * 0.65 + scoreFixedBroadband(row.fixedBroadband) * 0.35),
+    )
+    const tariffFriction = scoreTariffRate(row.tariff)
+    const taxTariffFriction = Math.round(clamp(tariffFriction * 0.65 + (100 - tradeScore) * 0.35))
+    const licensingComplexity = Math.round(
+      clamp(scoreRegQualityToLicensingComplexity(row.regulatoryQuality) * 0.8 + taxTariffFriction * 0.2),
+    )
+    const talentAvailability = Math.round(
+      clamp(
+        scoreTertiaryEnrollment(row.tertiaryEnrollment) * 0.45 +
+          (100 - scoreUnemploymentPenalty(row.unemployment)) * 0.3 +
+          digitalReadiness * 0.25,
+      ),
+    )
 
     const concentration3 = scoreBankConcentrationRisk(row.bankConcentration3)
     const concentration5 = scoreBankConcentrationRisk(row.bankConcentration5)
     const marketConcentrationRisk = Math.round(clamp(concentration3 * 0.6 + concentration5 * 0.4))
-
-    const tariffFriction = scoreTariffRate(row.tariff)
-    const taxTariffFriction = Math.round(clamp(tariffFriction * 0.65 + (100 - tradeScore) * 0.35))
 
     overrides[row.code] = {
       economicStrength,
@@ -252,6 +342,10 @@ const computeOverrides = (rows) => {
       marketSizeDepth,
       marketGrowthMomentum,
       marketConcentrationRisk,
+      customerDensity,
+      digitalReadiness,
+      licensingComplexity,
+      talentAvailability,
     }
   }
 
@@ -259,7 +353,7 @@ const computeOverrides = (rows) => {
 }
 
 const writeOverridesFile = async (overrides) => {
-  const output = `import type { FactorKey } from './countries'\n\nexport type FactorOverrides = Record<string, Partial<Record<FactorKey, number>>>\n\n// Generated by ingestion/update-indicators.mjs on ${runDate}\nexport const indicatorOverridesGeneratedAt = '${runDate}'\n\nexport const liveFactorConfidence: Partial<Record<FactorKey, number>> = {\n  economicStrength: 0.82,\n  taxTariffFriction: 0.8,\n  marketSizeDepth: 0.85,\n  marketGrowthMomentum: 0.83,\n  marketConcentrationRisk: 0.8,\n}\n\nexport const indicatorFactorOverrides: FactorOverrides = ${JSON.stringify(overrides, null, 2)}\n`
+  const output = `import type { FactorKey } from './countries'\n\nexport type FactorOverrides = Record<string, Partial<Record<FactorKey, number>>>\n\n// Generated by ingestion/update-indicators.mjs on ${runDate}\nexport const indicatorOverridesGeneratedAt = '${runDate}'\n\nexport const liveFactorConfidence: Partial<Record<FactorKey, number>> = {\n  economicStrength: 0.82,\n  taxTariffFriction: 0.8,\n  marketSizeDepth: 0.85,\n  marketGrowthMomentum: 0.83,\n  marketConcentrationRisk: 0.8,\n  customerDensity: 0.82,\n  digitalReadiness: 0.81,\n  licensingComplexity: 0.76,\n  talentAvailability: 0.79,\n}\n\nexport const indicatorFactorOverrides: FactorOverrides = ${JSON.stringify(overrides, null, 2)}\n`
   await writeFile(outputPath, output, 'utf-8')
 }
 

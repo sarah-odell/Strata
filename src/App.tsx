@@ -126,7 +126,12 @@ const factorLabel = (key: FactorKey): string => {
     dealExecutionRisk: 'Deal Execution Risk',
     marketSizeDepth: 'Market Size & Depth',
     marketGrowthMomentum: 'Market Growth Momentum',
-    marketConcentrationRisk: 'Market Concentration Risk',
+    marketConcentrationRisk: 'Competition Intensity',
+    customerDensity: 'Customer Density',
+    digitalReadiness: 'Digital Readiness',
+    licensingComplexity: 'Licensing Complexity',
+    languageBarrier: 'Language Barrier',
+    talentAvailability: 'Talent Availability',
   }
   return labels[key]
 }

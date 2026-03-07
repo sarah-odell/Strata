@@ -13,6 +13,11 @@ export type FactorKey =
   | 'marketSizeDepth'
   | 'marketGrowthMomentum'
   | 'marketConcentrationRisk'
+  | 'customerDensity'
+  | 'digitalReadiness'
+  | 'licensingComplexity'
+  | 'languageBarrier'
+  | 'talentAvailability'
 
 export type Citation = {
   label: string
@@ -81,6 +86,34 @@ const globalSources = {
   wbFiveBankConcentration: {
     label: 'World Bank 5-bank asset concentration',
     url: 'https://data.worldbank.org/indicator/GFDD.OI.06',
+  },
+  wbPopulationDensity: {
+    label: 'World Bank Population density',
+    url: 'https://data.worldbank.org/indicator/EN.POP.DNST',
+  },
+  wbUrbanPopulationShare: {
+    label: 'World Bank Urban population (% of total)',
+    url: 'https://data.worldbank.org/indicator/SP.URB.TOTL.IN.ZS',
+  },
+  wbInternetUsers: {
+    label: 'World Bank Individuals using the Internet (% of population)',
+    url: 'https://data.worldbank.org/indicator/IT.NET.USER.ZS',
+  },
+  wbFixedBroadband: {
+    label: 'World Bank Fixed broadband subscriptions (per 100 people)',
+    url: 'https://data.worldbank.org/indicator/IT.NET.BBND.P2',
+  },
+  wbRegulatoryQuality: {
+    label: 'World Bank Regulatory Quality: Estimate',
+    url: 'https://data.worldbank.org/indicator/RQ.EST',
+  },
+  wbTertiaryEnrollment: {
+    label: 'World Bank School enrollment, tertiary (% gross)',
+    url: 'https://data.worldbank.org/indicator/SE.TER.ENRR',
+  },
+  wbUnemployment: {
+    label: 'World Bank Unemployment, total (% of labor force)',
+    url: 'https://data.worldbank.org/indicator/SL.UEM.TOTL.ZS',
   },
 }
 
@@ -181,6 +214,30 @@ const factorCitationsFor = (countryCode: string): Record<FactorKey, Citation[]> 
       mkCitation(globalSources.wbBankConcentration.label, globalSources.wbBankConcentration.url),
       mkCitation(globalSources.wbFiveBankConcentration.label, globalSources.wbFiveBankConcentration.url),
       countryInstitution,
+    ],
+    customerDensity: [
+      mkCitation(globalSources.wbPopulationDensity.label, globalSources.wbPopulationDensity.url),
+      mkCitation(globalSources.wbUrbanPopulationShare.label, globalSources.wbUrbanPopulationShare.url),
+      mkCitation(globalSources.wbPopulation.label, globalSources.wbPopulation.url),
+    ],
+    digitalReadiness: [
+      mkCitation(globalSources.wbInternetUsers.label, globalSources.wbInternetUsers.url),
+      mkCitation(globalSources.wbFixedBroadband.label, globalSources.wbFixedBroadband.url),
+      countryInstitution,
+    ],
+    licensingComplexity: [
+      mkCitation(globalSources.wbRegulatoryQuality.label, globalSources.wbRegulatoryQuality.url),
+      mkCitation(globalSources.oecd.label, globalSources.oecd.url),
+      countryInstitution,
+    ],
+    languageBarrier: [
+      mkCitation(globalSources.oecd.label, globalSources.oecd.url),
+      countryInstitution,
+    ],
+    talentAvailability: [
+      mkCitation(globalSources.wbTertiaryEnrollment.label, globalSources.wbTertiaryEnrollment.url),
+      mkCitation(globalSources.wbUnemployment.label, globalSources.wbUnemployment.url),
+      mkCitation(globalSources.wbInternetUsers.label, globalSources.wbInternetUsers.url),
     ],
   }
 }
@@ -731,6 +788,11 @@ const baseFactorDefaults: Record<FactorKey, number> = {
   marketSizeDepth: 55,
   marketGrowthMomentum: 55,
   marketConcentrationRisk: 50,
+  customerDensity: 55,
+  digitalReadiness: 55,
+  licensingComplexity: 55,
+  languageBarrier: 50,
+  talentAvailability: 55,
 }
 
 const withOverrides = (profile: BaseCountryProfile): CountryProfile => {
@@ -797,6 +859,36 @@ const withOverrides = (profile: BaseCountryProfile): CountryProfile => {
       trendDirection: 'flat',
       delta: 0,
     },
+    customerDensity: {
+      lastRefreshed: indicatorOverridesGeneratedAt,
+      confidence: liveFactorConfidence.customerDensity ?? 0.82,
+      trendDirection: 'up',
+      delta: 0.9,
+    },
+    digitalReadiness: {
+      lastRefreshed: indicatorOverridesGeneratedAt,
+      confidence: liveFactorConfidence.digitalReadiness ?? 0.81,
+      trendDirection: 'up',
+      delta: 1.3,
+    },
+    licensingComplexity: {
+      lastRefreshed: indicatorOverridesGeneratedAt,
+      confidence: liveFactorConfidence.licensingComplexity ?? 0.76,
+      trendDirection: 'down',
+      delta: -0.7,
+    },
+    languageBarrier: {
+      lastRefreshed: asOfDate,
+      confidence: 0.58,
+      trendDirection: 'flat',
+      delta: 0,
+    },
+    talentAvailability: {
+      lastRefreshed: indicatorOverridesGeneratedAt,
+      confidence: liveFactorConfidence.talentAvailability ?? 0.79,
+      trendDirection: 'up',
+      delta: 0.8,
+    },
   }
 
   const professionalServices = profile.sectorFit['Professional Services'] ?? 0
@@ -805,6 +897,8 @@ const withOverrides = (profile: BaseCountryProfile): CountryProfile => {
   const aerospaceDefense = profile.sectorFit['Aerospace & Defense'] ?? 0
 
   const clampScore = (value: number): number => Math.max(0, Math.min(100, Math.round(value)))
+  // Language barriers are modeled as an execution proxy until multilingual talent datasets are added.
+  factors.languageBarrier = clampScore(Math.round(factors.dealExecutionRisk * 0.7 + (100 - factors.digitalReadiness) * 0.3))
 
   const expandedSectorFit: Record<string, number> = {
     ...profile.sectorFit,

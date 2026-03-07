@@ -11,6 +11,10 @@ export const liveFactorConfidence: Partial<Record<FactorKey, number>> = {
   marketSizeDepth: 0.85,
   marketGrowthMomentum: 0.83,
   marketConcentrationRisk: 0.8,
+  customerDensity: 0.82,
+  digitalReadiness: 0.81,
+  licensingComplexity: 0.76,
+  talentAvailability: 0.79,
 }
 
 export const indicatorFactorOverrides: FactorOverrides = {
@@ -19,370 +23,582 @@ export const indicatorFactorOverrides: FactorOverrides = {
     "taxTariffFriction": 46,
     "marketSizeDepth": 79,
     "marketGrowthMomentum": 57,
-    "marketConcentrationRisk": 52
+    "marketConcentrationRisk": 52,
+    "customerDensity": 50,
+    "digitalReadiness": 84,
+    "licensingComplexity": 27,
+    "talentAvailability": 87
   },
   "DE": {
     "economicStrength": 46,
     "taxTariffFriction": 26,
     "marketSizeDepth": 67,
     "marketGrowthMomentum": 17,
-    "marketConcentrationRisk": 88
+    "marketConcentrationRisk": 88,
+    "customerDensity": 66,
+    "digitalReadiness": 87,
+    "licensingComplexity": 22,
+    "talentAvailability": 88
   },
   "SG": {
     "economicStrength": 83,
     "taxTariffFriction": 7,
     "marketSizeDepth": 49,
     "marketGrowthMomentum": 76,
-    "marketConcentrationRisk": 88
+    "marketConcentrationRisk": 88,
+    "customerDensity": 96,
+    "digitalReadiness": 80,
+    "licensingComplexity": 5,
+    "talentAvailability": 91
   },
   "CA": {
     "economicStrength": 48,
     "taxTariffFriction": 28,
     "marketSizeDepth": 64,
     "marketGrowthMomentum": 38,
-    "marketConcentrationRisk": 77
+    "marketConcentrationRisk": 77,
+    "customerDensity": 41,
+    "digitalReadiness": 86,
+    "licensingComplexity": 19,
+    "talentAvailability": 81
   },
   "AE": {
     "economicStrength": 63,
     "taxTariffFriction": 30,
     "marketSizeDepth": 46,
     "marketGrowthMomentum": 56,
-    "marketConcentrationRisk": 84
+    "marketConcentrationRisk": 84,
+    "customerDensity": 63,
+    "digitalReadiness": 86,
+    "licensingComplexity": 29,
+    "talentAvailability": 83
   },
   "GB": {
     "economicStrength": 40,
     "taxTariffFriction": 24,
     "marketSizeDepth": 68,
     "marketGrowthMomentum": 32,
-    "marketConcentrationRisk": 59
+    "marketConcentrationRisk": 59,
+    "customerDensity": 67,
+    "digitalReadiness": 86,
+    "licensingComplexity": 20,
+    "talentAvailability": 87
   },
   "FR": {
     "economicStrength": 58,
     "taxTariffFriction": 28,
     "marketSizeDepth": 66,
     "marketGrowthMomentum": 45,
-    "marketConcentrationRisk": 78
+    "marketConcentrationRisk": 78,
+    "customerDensity": 60,
+    "digitalReadiness": 86,
+    "licensingComplexity": 27,
+    "talentAvailability": 78
   },
   "NL": {
     "economicStrength": 47,
     "taxTariffFriction": 19,
     "marketSizeDepth": 54,
     "marketGrowthMomentum": 33,
-    "marketConcentrationRisk": 92
+    "marketConcentrationRisk": 92,
+    "customerDensity": 74,
+    "digitalReadiness": 87,
+    "licensingComplexity": 15,
+    "talentAvailability": 91
   },
   "JP": {
     "economicStrength": 47,
     "taxTariffFriction": 33,
     "marketSizeDepth": 72,
     "marketGrowthMomentum": 30,
-    "marketConcentrationRisk": 62
+    "marketConcentrationRisk": 62,
+    "customerDensity": 71,
+    "digitalReadiness": 83,
+    "licensingComplexity": 23,
+    "talentAvailability": 82
   },
   "AU": {
     "economicStrength": 46,
     "taxTariffFriction": 33,
     "marketSizeDepth": 61,
     "marketGrowthMomentum": 39,
-    "marketConcentrationRisk": 83
+    "marketConcentrationRisk": 83,
+    "customerDensity": 42,
+    "digitalReadiness": 85,
+    "licensingComplexity": 15,
+    "talentAvailability": 93
   },
   "IN": {
     "economicStrength": 60,
     "taxTariffFriction": 76,
     "marketSizeDepth": 71,
     "marketGrowthMomentum": 78,
-    "marketConcentrationRisk": 55
+    "marketConcentrationRisk": 55,
+    "customerDensity": 44,
+    "digitalReadiness": 51,
+    "licensingComplexity": 58,
+    "talentAvailability": 61
   },
   "BR": {
     "economicStrength": 61,
     "taxTariffFriction": 82,
     "marketSizeDepth": 66,
     "marketGrowthMomentum": 70,
-    "marketConcentrationRisk": 81
+    "marketConcentrationRisk": 81,
+    "customerDensity": 49,
+    "digitalReadiness": 75,
+    "licensingComplexity": 61,
+    "talentAvailability": 75
   },
   "MX": {
     "economicStrength": 52,
     "taxTariffFriction": 32,
     "marketSizeDepth": 54,
     "marketGrowthMomentum": 46,
-    "marketConcentrationRisk": 66
+    "marketConcentrationRisk": 66,
+    "customerDensity": 55,
+    "digitalReadiness": 72,
+    "licensingComplexity": 49,
+    "talentAvailability": 73
   },
   "ES": {
     "economicStrength": 66,
     "taxTariffFriction": 28,
     "marketSizeDepth": 59,
     "marketGrowthMomentum": 66,
-    "marketConcentrationRisk": 83
+    "marketConcentrationRisk": 83,
+    "customerDensity": 58,
+    "digitalReadiness": 85,
+    "licensingComplexity": 34,
+    "talentAvailability": 77
   },
   "IT": {
     "economicStrength": 52,
     "taxTariffFriction": 29,
     "marketSizeDepth": 60,
     "marketGrowthMomentum": 39,
-    "marketConcentrationRisk": 75
+    "marketConcentrationRisk": 75,
+    "customerDensity": 59,
+    "digitalReadiness": 81,
+    "licensingComplexity": 35,
+    "talentAvailability": 81
   },
   "KR": {
     "economicStrength": 61,
     "taxTariffFriction": 48,
     "marketSizeDepth": 64,
     "marketGrowthMomentum": 52,
-    "marketConcentrationRisk": 76
+    "marketConcentrationRisk": 76,
+    "customerDensity": 72,
+    "digitalReadiness": 88,
+    "licensingComplexity": 32,
+    "talentAvailability": 94
   },
   "SA": {
     "economicStrength": 42,
     "taxTariffFriction": 55,
     "marketSizeDepth": 52,
     "marketGrowthMomentum": 36,
-    "marketConcentrationRisk": 85
+    "marketConcentrationRisk": 85,
+    "customerDensity": 45,
+    "digitalReadiness": 88,
+    "licensingComplexity": 43,
+    "talentAvailability": 90
   },
   "SE": {
     "economicStrength": 65,
     "taxTariffFriction": 21,
     "marketSizeDepth": 51,
     "marketGrowthMomentum": 46,
-    "marketConcentrationRisk": 92
+    "marketConcentrationRisk": 92,
+    "customerDensity": 50,
+    "digitalReadiness": 86,
+    "licensingComplexity": 17,
+    "talentAvailability": 78
   },
   "PL": {
     "economicStrength": 69,
     "taxTariffFriction": 21,
     "marketSizeDepth": 47,
     "marketGrowthMomentum": 68,
-    "marketConcentrationRisk": 68
+    "marketConcentrationRisk": 68,
+    "customerDensity": 49,
+    "digitalReadiness": 78,
+    "licensingComplexity": 31,
+    "talentAvailability": 85
   },
   "ID": {
     "economicStrength": 66,
     "taxTariffFriction": 58,
     "marketSizeDepth": 57,
     "marketGrowthMomentum": 74,
-    "marketConcentrationRisk": 58
+    "marketConcentrationRisk": 58,
+    "customerDensity": 50,
+    "digitalReadiness": 56,
+    "licensingComplexity": 47,
+    "talentAvailability": 68
   },
   "CH": {
     "economicStrength": 41,
     "taxTariffFriction": 28,
     "marketSizeDepth": 54,
     "marketGrowthMomentum": 27,
-    "marketConcentrationRisk": 80
+    "marketConcentrationRisk": 80,
+    "customerDensity": 66,
+    "digitalReadiness": 88,
+    "licensingComplexity": 18,
+    "talentAvailability": 85
   },
   "DK": {
     "economicStrength": 78,
     "taxTariffFriction": 20,
     "marketSizeDepth": 47,
     "marketGrowthMomentum": 72,
-    "marketConcentrationRisk": 89
+    "marketConcentrationRisk": 89,
+    "customerDensity": 64,
+    "digitalReadiness": 88,
+    "licensingComplexity": 14,
+    "talentAvailability": 86
   },
   "NO": {
     "economicStrength": 61,
     "taxTariffFriction": 29,
     "marketSizeDepth": 47,
     "marketGrowthMomentum": 54,
-    "marketConcentrationRisk": 93
+    "marketConcentrationRisk": 93,
+    "customerDensity": 44,
+    "digitalReadiness": 88,
+    "licensingComplexity": 20,
+    "talentAvailability": 91
   },
   "FI": {
     "economicStrength": 53,
     "taxTariffFriction": 25,
     "marketSizeDepth": 42,
     "marketGrowthMomentum": 32,
-    "marketConcentrationRisk": 93
+    "marketConcentrationRisk": 93,
+    "customerDensity": 43,
+    "digitalReadiness": 83,
+    "licensingComplexity": 17,
+    "talentAvailability": 80
   },
   "IE": {
     "economicStrength": 62,
     "taxTariffFriction": 16,
     "marketSizeDepth": 35,
     "marketGrowthMomentum": 51,
-    "marketConcentrationRisk": 84
+    "marketConcentrationRisk": 84,
+    "customerDensity": 48,
+    "digitalReadiness": 83,
+    "licensingComplexity": 15,
+    "talentAvailability": 85
   },
   "AT": {
     "economicStrength": 51,
     "taxTariffFriction": 21,
     "marketSizeDepth": 47,
     "marketGrowthMomentum": 20,
-    "marketConcentrationRisk": 79
+    "marketConcentrationRisk": 79,
+    "customerDensity": 54,
+    "digitalReadiness": 81,
+    "licensingComplexity": 23,
+    "talentAvailability": 87
   },
   "BE": {
     "economicStrength": 47,
     "taxTariffFriction": 18,
     "marketSizeDepth": 47,
     "marketGrowthMomentum": 32,
-    "marketConcentrationRisk": 82
+    "marketConcentrationRisk": 82,
+    "customerDensity": 71,
+    "digitalReadiness": 87,
+    "licensingComplexity": 25,
+    "talentAvailability": 85
   },
   "CZ": {
     "economicStrength": 67,
     "taxTariffFriction": 20,
     "marketSizeDepth": 40,
     "marketGrowthMomentum": 50,
-    "marketConcentrationRisk": 76
+    "marketConcentrationRisk": 76,
+    "customerDensity": 58,
+    "digitalReadiness": 83,
+    "licensingComplexity": 23,
+    "talentAvailability": 83
   },
   "PT": {
     "economicStrength": 68,
     "taxTariffFriction": 24,
     "marketSizeDepth": 43,
     "marketGrowthMomentum": 57,
-    "marketConcentrationRisk": 84
+    "marketConcentrationRisk": 84,
+    "customerDensity": 49,
+    "digitalReadiness": 85,
+    "licensingComplexity": 33,
+    "talentAvailability": 83
   },
   "GR": {
     "economicStrength": 67,
     "taxTariffFriction": 24,
     "marketSizeDepth": 38,
     "marketGrowthMomentum": 58,
-    "marketConcentrationRisk": 93
+    "marketConcentrationRisk": 93,
+    "customerDensity": 56,
+    "digitalReadiness": 85,
+    "licensingComplexity": 35,
+    "talentAvailability": 83
   },
   "HU": {
     "economicStrength": 48,
     "taxTariffFriction": 19,
     "marketSizeDepth": 33,
     "marketGrowthMomentum": 31,
-    "marketConcentrationRisk": 76
+    "marketConcentrationRisk": 76,
+    "customerDensity": 54,
+    "digitalReadiness": 84,
+    "licensingComplexity": 39,
+    "talentAvailability": 79
   },
   "TR": {
     "economicStrength": 41,
     "taxTariffFriction": 62,
     "marketSizeDepth": 53,
     "marketGrowthMomentum": 64,
-    "marketConcentrationRisk": 64
+    "marketConcentrationRisk": 64,
+    "customerDensity": 62,
+    "digitalReadiness": 76,
+    "licensingComplexity": 56,
+    "talentAvailability": 81
   },
   "RO": {
     "economicStrength": 52,
     "taxTariffFriction": 26,
     "marketSizeDepth": 37,
     "marketGrowthMomentum": 45,
-    "marketConcentrationRisk": 81
+    "marketConcentrationRisk": 81,
+    "customerDensity": 41,
+    "digitalReadiness": 82,
+    "licensingComplexity": 40,
+    "talentAvailability": 75
   },
   "CN": {
     "economicStrength": 57,
     "taxTariffFriction": 58,
     "marketSizeDepth": 89,
     "marketGrowthMomentum": 72,
-    "marketConcentrationRisk": 54
+    "marketConcentrationRisk": 54,
+    "customerDensity": 54,
+    "digitalReadiness": 86,
+    "licensingComplexity": 57,
+    "talentAvailability": 86
   },
   "HK": {
     "economicStrength": 84,
     "taxTariffFriction": 7,
     "marketSizeDepth": 49,
     "marketGrowthMomentum": 71,
-    "marketConcentrationRisk": 75
+    "marketConcentrationRisk": 75,
+    "customerDensity": 95,
+    "digitalReadiness": 86,
+    "licensingComplexity": 16,
+    "talentAvailability": 94
   },
   "TW": {
     "economicStrength": 42,
     "taxTariffFriction": 33,
     "marketSizeDepth": 4,
     "marketGrowthMomentum": 50,
-    "marketConcentrationRisk": 40
+    "marketConcentrationRisk": 40,
+    "customerDensity": 9,
+    "digitalReadiness": 0,
+    "licensingComplexity": 47,
+    "talentAvailability": 18
   },
   "VN": {
     "economicStrength": 83,
     "taxTariffFriction": 29,
     "marketSizeDepth": 58,
     "marketGrowthMomentum": 89,
-    "marketConcentrationRisk": 51
+    "marketConcentrationRisk": 51,
+    "customerDensity": 42,
+    "digitalReadiness": 75,
+    "licensingComplexity": 52,
+    "talentAvailability": 69
   },
   "TH": {
     "economicStrength": 72,
     "taxTariffFriction": 54,
     "marketSizeDepth": 57,
     "marketGrowthMomentum": 63,
-    "marketConcentrationRisk": 63
+    "marketConcentrationRisk": 63,
+    "customerDensity": 51,
+    "digitalReadiness": 73,
+    "licensingComplexity": 48,
+    "talentAvailability": 74
   },
   "PH": {
     "economicStrength": 70,
     "taxTariffFriction": 42,
     "marketSizeDepth": 51,
     "marketGrowthMomentum": 79,
-    "marketConcentrationRisk": 67
+    "marketConcentrationRisk": 67,
+    "customerDensity": 55,
+    "digitalReadiness": 64,
+    "licensingComplexity": 46,
+    "talentAvailability": 71
   },
   "MY": {
     "economicStrength": 79,
     "taxTariffFriction": 41,
     "marketSizeDepth": 53,
     "marketGrowthMomentum": 78,
-    "marketConcentrationRisk": 69
+    "marketConcentrationRisk": 69,
+    "customerDensity": 58,
+    "digitalReadiness": 73,
+    "licensingComplexity": 38,
+    "talentAvailability": 69
   },
   "NZ": {
     "economicStrength": 40,
     "taxTariffFriction": 34,
     "marketSizeDepth": 44,
     "marketGrowthMomentum": 32,
-    "marketConcentrationRisk": 76
+    "marketConcentrationRisk": 76,
+    "customerDensity": 46,
+    "digitalReadiness": 85,
+    "licensingComplexity": 16,
+    "talentAvailability": 85
   },
   "IL": {
     "economicStrength": 47,
     "taxTariffFriction": 39,
     "marketSizeDepth": 46,
-    "marketGrowthMomentum": 49,
-    "marketConcentrationRisk": 87
+    "marketGrowthMomentum": 35,
+    "marketConcentrationRisk": 87,
+    "customerDensity": 73,
+    "digitalReadiness": 79,
+    "licensingComplexity": 30,
+    "talentAvailability": 78
   },
   "QA": {
     "economicStrength": 41,
     "taxTariffFriction": 35,
     "marketSizeDepth": 40,
     "marketGrowthMomentum": 33,
-    "marketConcentrationRisk": 94
+    "marketConcentrationRisk": 94,
+    "customerDensity": 68,
+    "digitalReadiness": 73,
+    "licensingComplexity": 31,
+    "talentAvailability": 67
   },
   "ZA": {
     "economicStrength": 37,
     "taxTariffFriction": 60,
     "marketSizeDepth": 49,
     "marketGrowthMomentum": 26,
-    "marketConcentrationRisk": 89
+    "marketConcentrationRisk": 89,
+    "customerDensity": 44,
+    "digitalReadiness": 56,
+    "licensingComplexity": 55,
+    "talentAvailability": 29
   },
   "NG": {
     "economicStrength": 30,
     "taxTariffFriction": 84,
     "marketSizeDepth": 43,
     "marketGrowthMomentum": 60,
-    "marketConcentrationRisk": 73
+    "marketConcentrationRisk": 73,
+    "customerDensity": 57,
+    "digitalReadiness": 25,
+    "licensingComplexity": 72,
+    "talentAvailability": 40
   },
   "EG": {
     "economicStrength": 41,
     "taxTariffFriction": 81,
     "marketSizeDepth": 45,
     "marketGrowthMomentum": 59,
-    "marketConcentrationRisk": 84
+    "marketConcentrationRisk": 84,
+    "customerDensity": 37,
+    "digitalReadiness": 60,
+    "licensingComplexity": 67,
+    "talentAvailability": 59
   },
   "KE": {
     "economicStrength": 51,
     "taxTariffFriction": 82,
-    "marketSizeDepth": 33,
+    "marketSizeDepth": 36,
     "marketGrowthMomentum": 65,
-    "marketConcentrationRisk": 60
+    "marketConcentrationRisk": 60,
+    "customerDensity": 28,
+    "digitalReadiness": 25,
+    "licensingComplexity": 63,
+    "talentAvailability": 37
   },
   "MA": {
     "economicStrength": 65,
     "taxTariffFriction": 46,
     "marketSizeDepth": 41,
     "marketGrowthMomentum": 65,
-    "marketConcentrationRisk": 80
+    "marketConcentrationRisk": 80,
+    "customerDensity": 48,
+    "digitalReadiness": 67,
+    "licensingComplexity": 50,
+    "talentAvailability": 61
   },
   "CL": {
     "economicStrength": 63,
     "taxTariffFriction": 23,
     "marketSizeDepth": 46,
     "marketGrowthMomentum": 64,
-    "marketConcentrationRisk": 71
+    "marketConcentrationRisk": 71,
+    "customerDensity": 50,
+    "digitalReadiness": 78,
+    "licensingComplexity": 29,
+    "talentAvailability": 80
   },
   "CO": {
     "economicStrength": 45,
     "taxTariffFriction": 47,
     "marketSizeDepth": 45,
     "marketGrowthMomentum": 48,
-    "marketConcentrationRisk": 85
+    "marketConcentrationRisk": 85,
+    "customerDensity": 52,
+    "digitalReadiness": 68,
+    "licensingComplexity": 48,
+    "talentAvailability": 67
   },
   "AR": {
     "economicStrength": 18,
     "taxTariffFriction": 83,
     "marketSizeDepth": 43,
     "marketGrowthMomentum": 16,
-    "marketConcentrationRisk": 68
+    "marketConcentrationRisk": 68,
+    "customerDensity": 47,
+    "digitalReadiness": 78,
+    "licensingComplexity": 65,
+    "talentAvailability": 85
   },
   "PE": {
     "economicStrength": 63,
     "taxTariffFriction": 26,
     "marketSizeDepth": 43,
     "marketGrowthMomentum": 64,
-    "marketConcentrationRisk": 83
+    "marketConcentrationRisk": 83,
+    "customerDensity": 49,
+    "digitalReadiness": 66,
+    "licensingComplexity": 40,
+    "talentAvailability": 78
   },
   "CR": {
     "economicStrength": 72,
     "taxTariffFriction": 32,
     "marketSizeDepth": 30,
     "marketGrowthMomentum": 78,
-    "marketConcentrationRisk": 72
+    "marketConcentrationRisk": 72,
+    "customerDensity": 58,
+    "digitalReadiness": 76,
+    "licensingComplexity": 38,
+    "talentAvailability": 71
   }
 }
