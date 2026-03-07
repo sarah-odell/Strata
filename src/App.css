@@ -422,6 +422,82 @@ h4 {
   color: var(--text-secondary);
 }
 
+/* --- Deal Lab exports --- */
+
+.export-panel {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.export-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.export-btn {
+  height: 2.25rem;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  padding: 0 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.export-btn:hover {
+  background: rgba(196, 153, 60, 0.22);
+}
+
+.export-history {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.export-empty {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-tertiary);
+}
+
+.export-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.export-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.625rem;
+  background: var(--surface-0);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.export-item p {
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-primary);
+}
+
+.export-item span {
+  display: block;
+  margin-top: 0.1875rem;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
 /* --- Prompt assumptions --- */
 
 .prompt-assumptions {
@@ -725,6 +801,16 @@ li:first-child {
   background: rgba(255, 255, 255, 0.03);
 }
 
+.country-table tbody tr {
+  cursor: pointer;
+  transition: background-color 120ms ease, box-shadow 120ms ease;
+}
+
+.country-table tbody tr.is-selected {
+  background: rgba(196, 153, 60, 0.08);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
 .score-cell {
   display: inline-flex;
   align-items: center;
@@ -757,6 +843,22 @@ li:first-child {
   color: var(--text-tertiary);
 }
 
+.table-focus-panel {
+  margin-top: 0.625rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  background: var(--surface-1);
+}
+
+.table-focus-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
 /* --- Radar chart --- */
 
 .radar-layout {
@@ -778,11 +880,26 @@ li:first-child {
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--surface-0);
-  padding: 0.625rem;
+  padding: 0.75rem;
 }
 
 .radar-card h4 {
-  margin-top: 0.2rem;
+  margin-top: 0.25rem;
+}
+
+.radar-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.radar-card-score {
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--accent);
 }
 
 .radar-header {
@@ -797,6 +914,7 @@ li:first-child {
   height: auto;
   background: var(--surface-0);
   border-radius: 4px;
+  margin-top: 0.45rem;
 }
 
 .radar-legend {
@@ -1150,6 +1268,12 @@ li:first-child {
 @media (max-width: 900px) {
   .research-trigger-grid {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .export-panel-header,
+  .export-item {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 

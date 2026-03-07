@@ -78,6 +78,16 @@ type ResearchResult = {
   aggregateRecommendation: RecommendationLabel
 }
 
+type DealLabExportEntry = {
+  id: string
+  createdAt: string
+  fileName: string
+  summary: string
+  content: string
+}
+
+const DEAL_LAB_EXPORTS_KEY = 'strata_deal_lab_exports_v1'
+
 const personaLabel = (id: string): string =>
   ({
     'macro-economist': 'Macro Economist',
@@ -382,6 +392,36 @@ const radarPoint = (
   }
 }
 
+const downloadTextFile = (fileName: string, content: string) => {
+  const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = fileName
+  document.body.appendChild(anchor)
+  anchor.click()
+  document.body.removeChild(anchor)
+  URL.revokeObjectURL(url)
+}
+
+const loadDealLabExports = (): DealLabExportEntry[] => {
+  try {
+    if (typeof window === 'undefined') {
+      return []
+    }
+
+    const raw = window.localStorage.getItem(DEAL_LAB_EXPORTS_KEY)
+    if (!raw) {
+      return []
+    }
+
+    const parsed = JSON.parse(raw) as DealLabExportEntry[]
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('radar')
   const [rankingView, setRankingView] = useState<RankingView>('table')
@@ -407,6 +447,10 @@ function App() {
   const [batchStatus, setBatchStatus] = useState<{ total: number; completed: number; running: boolean }>({ total: 0, completed: 0, running: false })
   const [sortColumn, setSortColumn] = useState<string>('score')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+  const [selectedTableCountryCode, setSelectedTableCountryCode] = useState<string | null>(null)
+  const [dealLabExportHistory, setDealLabExportHistory] = useState<DealLabExportEntry[]>(() =>
+    loadDealLabExports(),
+  )
 
   const regionOptions = useMemo(
     () => Array.from(new Set(countryProfiles.map((profile) => profile.region))),
@@ -454,6 +498,9 @@ function App() {
   }
   const sortIndicator = (column: string) =>
     sortColumn === column ? (sortDirection === 'asc' ? ' \u25B2' : ' \u25BC') : ''
+
+  const selectedTableProfile =
+    sortedRanked.find((profile) => profile.code === selectedTableCountryCode) ?? sortedRanked[0] ?? null
 
   const promptAssumptions = useMemo(
     () => inferAssumptions(dealPrompt, fundSizeInput, { strategy, sector, scenarioCase, dealSize }),
@@ -586,6 +633,70 @@ function App() {
     setSector(inferred.sector)
     setScenarioCase(inferred.scenarioCase)
     setDealSize(inferred.dealSize)
+  }
+
+  const createDealLabMemo = (): string => {
+    const generatedAt = new Date().toISOString()
+    const topThreeLines = tailoredTopThree
+      .map((profile, index) => {
+        const strengths = topStrengths(profile, promptAssumptions.strategy).join(' + ')
+        return `${index + 1}. ${profile.name} (${profile.code}) — Score ${profile.scenarioScore} · ${profile.scenarioRecommendation}\n   - Why: ${strengths}\n   - Region: ${profile.region}`
+      })
+      .join('\n')
+
+    return [
+      '# Strata Deal Lab Memo',
+      '',
+      `Generated: ${generatedAt}`,
+      '',
+      '## Input Context',
+      `- Prompt: ${dealPrompt}`,
+      `- Fund size (USD millions): ${fundSizeInput || 'Not provided'}`,
+      `- Inferred strategy: ${promptAssumptions.strategy}`,
+      `- Inferred sector: ${promptAssumptions.sector}`,
+      `- Inferred scenario: ${scenarioLabel[promptAssumptions.scenarioCase]}`,
+      `- Inferred deal size: ${dealSizeOptions.find((option) => option.value === promptAssumptions.dealSize)?.label ?? promptAssumptions.dealSize}`,
+      `- Target country detected: ${targetCountryProfile ? `${targetCountryProfile.name} (${targetCountryProfile.code})` : 'None'}`,
+      '',
+      '## Top 3 Tailored Recommendations',
+      topThreeLines || 'No recommendations available.',
+      '',
+      '## Portfolio Adjacency Inputs',
+      `- Portfolio sectors: ${portfolioSectors.length > 0 ? portfolioSectors.join(', ') : 'None selected'}`,
+      `- Portfolio regions: ${portfolioRegions.length > 0 ? portfolioRegions.join(', ') : 'None selected'}`,
+      `- Portfolio capabilities: ${portfolioCapabilities.length > 0 ? portfolioCapabilities.join(', ') : 'None selected'}`,
+      '',
+      '## Notes',
+      '- Recommendation labels use the five-band scale: Very strong, Strong, Moderate, Weak, Very weak.',
+      '- Scenario and adjacency overlays are included in scenario scores shown above.',
+      '',
+    ].join('\n')
+  }
+
+  const handleExportDealLabMemo = () => {
+    const content = createDealLabMemo()
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-')
+    const fileName = `strata-deal-lab-${stamp}.md`
+
+    downloadTextFile(fileName, content)
+
+    const nextEntry: DealLabExportEntry = {
+      id: stamp,
+      createdAt: new Date().toISOString(),
+      fileName,
+      summary: `${promptAssumptions.strategy} · ${promptAssumptions.sector} · ${scenarioLabel[promptAssumptions.scenarioCase]}`,
+      content,
+    }
+
+    setDealLabExportHistory((current) => {
+      const next = [nextEntry, ...current].slice(0, 12)
+      window.localStorage.setItem(DEAL_LAB_EXPORTS_KEY, JSON.stringify(next))
+      return next
+    })
+  }
+
+  const handleDownloadFromHistory = (entry: DealLabExportEntry) => {
+    downloadTextFile(entry.fileName, entry.content)
   }
 
   return (
@@ -815,7 +926,15 @@ function App() {
                 </thead>
                 <tbody>
                   {sortedRanked.map((profile, index) => (
-                    <tr key={`table-${profile.code}`}>
+                    <tr
+                      key={`table-${profile.code}`}
+                      className={
+                        (selectedTableProfile?.code ?? sortedRanked[0]?.code) === profile.code
+                          ? 'is-selected'
+                          : undefined
+                      }
+                      onClick={() => setSelectedTableCountryCode(profile.code)}
+                    >
                       <td>#{index + 1}</td>
                       <td>
                         <span className="table-country-name">{profile.name}</span>
@@ -843,6 +962,28 @@ function App() {
               </table>
             </section>
           )}
+
+          {rankingView === 'table' && selectedTableProfile ? (
+            <section className="table-focus-panel">
+              <div className="table-focus-header">
+                <div>
+                  <p className="top-rank">Selected market</p>
+                  <h4>{selectedTableProfile.name}</h4>
+                  <p className="region">{selectedTableProfile.region}</p>
+                </div>
+                <div className="score-stack">
+                  <p className="score">{selectedTableProfile.scenarioScore}</p>
+                  <p className={badgeClass(selectedTableProfile.scenarioRecommendation)}>
+                    {selectedTableProfile.scenarioRecommendation}
+                  </p>
+                </div>
+              </div>
+              <p className="summary">{selectedTableProfile.notes}</p>
+              <p className="meta">
+                Strongest modeled factors: {topStrengths(selectedTableProfile, strategy).join(' + ')}
+              </p>
+            </section>
+          ) : null}
 
           <section className="weights-panel">
             <p className="weights-title">Factor Weights — {strategy}</p>
@@ -970,6 +1111,47 @@ function App() {
             ) : null}
           </section>
 
+          <section className="export-panel">
+            <div className="export-panel-header">
+              <div>
+                <p className="weights-title">Memo Export</p>
+                <p className="prompt-subtitle">
+                  Export a Deal Lab memo draft from your current prompt assumptions and top recommendations.
+                </p>
+              </div>
+              <button type="button" className="export-btn" onClick={handleExportDealLabMemo}>
+                Export memo (.md)
+              </button>
+            </div>
+
+            <div className="export-history">
+              <p className="adjacency-label">Recent exports</p>
+              {dealLabExportHistory.length === 0 ? (
+                <p className="export-empty">No exports yet.</p>
+              ) : (
+                <div className="export-list">
+                  {dealLabExportHistory.map((entry) => (
+                    <div key={entry.id} className="export-item">
+                      <div>
+                        <p>{entry.fileName}</p>
+                        <span>
+                          {new Date(entry.createdAt).toLocaleString()} · {entry.summary}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        className="scenario-btn"
+                        onClick={() => handleDownloadFromHistory(entry)}
+                      >
+                        Download
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+
           <section className="radar-panel">
             <div className="radar-header">
               <div>
@@ -1000,11 +1182,13 @@ function App() {
 
                 return (
                   <article key={`radar-${profile.code}`} className="radar-card">
-                    <p className="top-rank">{podiumLabels[index] ?? `${index + 1}th place`}</p>
+                    <div className="radar-card-head">
+                      <p className="top-rank">{podiumLabels[index] ?? `${index + 1}th place`}</p>
+                      <p className="radar-card-score">{profile.scenarioScore}</p>
+                    </div>
                     <h4>{profile.name}</h4>
-                    <p className={badgeClass(profile.scenarioRecommendation)}>
-                      {profile.scenarioRecommendation}
-                    </p>
+                    <p className="region">{profile.region}</p>
+                    <p className={badgeClass(profile.scenarioRecommendation)}>{profile.scenarioRecommendation}</p>
 
                     <svg
                       viewBox={`0 0 ${radarSize} ${radarSize}`}
