@@ -12,7 +12,19 @@ It currently combines:
 
 ## Current country coverage
 13 markets:
-- US, DE, SG, CA, AE, GB, FR, NL, JP, AU, IN, BR, MX
+- United States
+- Germany
+- Singapore
+- Canada
+- United Arab Emirates
+- United Kingdom
+- France
+- Netherlands
+- Japan
+- Australia
+- India
+- Brazil
+- Mexico
 
 Markets are handled without US/DE priority bias in monitoring and ranking display.
 
