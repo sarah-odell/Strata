@@ -13,7 +13,7 @@ Strata is a PE/corp-dev decision support tool for market expansion screening.
 - Stores snapshots and monitor runs via a lightweight backend API.
 
 ## Coverage
-Tracked markets (13):
+Tracked markets (20):
 - United States
 - Germany
 - Singapore
@@ -27,6 +27,13 @@ Tracked markets (13):
 - India
 - Brazil
 - Mexico
+- Spain
+- Italy
+- South Korea
+- Saudi Arabia
+- Sweden
+- Poland
+- Indonesia
 
 Industries:
 - Professional Services

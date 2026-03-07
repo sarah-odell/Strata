@@ -12,43 +12,43 @@ export const liveFactorConfidence: Partial<Record<FactorKey, number>> = {
 
 export const indicatorFactorOverrides: FactorOverrides = {
   "US": {
-    "economicStrength": 38,
+    "economicStrength": 41,
     "taxTariffFriction": 48
   },
   "DE": {
-    "economicStrength": 30,
+    "economicStrength": 35,
     "taxTariffFriction": 38
   },
   "SG": {
-    "economicStrength": 84,
+    "economicStrength": 86,
     "taxTariffFriction": 0
   },
   "CA": {
-    "economicStrength": 27,
+    "economicStrength": 33,
     "taxTariffFriction": 39
   },
   "AE": {
-    "economicStrength": 44,
+    "economicStrength": 49,
     "taxTariffFriction": 34
   },
   "GB": {
-    "economicStrength": 30,
+    "economicStrength": 34,
     "taxTariffFriction": 36
   },
   "FR": {
-    "economicStrength": 39,
+    "economicStrength": 42,
     "taxTariffFriction": 39
   },
   "NL": {
-    "economicStrength": 37,
+    "economicStrength": 41,
     "taxTariffFriction": 29
   },
   "JP": {
-    "economicStrength": 33,
+    "economicStrength": 37,
     "taxTariffFriction": 42
   },
   "AU": {
-    "economicStrength": 29,
+    "economicStrength": 33,
     "taxTariffFriction": 42
   },
   "IN": {
@@ -56,11 +56,39 @@ export const indicatorFactorOverrides: FactorOverrides = {
     "taxTariffFriction": 82
   },
   "BR": {
-    "economicStrength": 44,
+    "economicStrength": 46,
     "taxTariffFriction": 99
   },
   "MX": {
-    "economicStrength": 33,
+    "economicStrength": 37,
     "taxTariffFriction": 42
+  },
+  "ES": {
+    "economicStrength": 48,
+    "taxTariffFriction": 39
+  },
+  "IT": {
+    "economicStrength": 39,
+    "taxTariffFriction": 40
+  },
+  "KR": {
+    "economicStrength": 46,
+    "taxTariffFriction": 56
+  },
+  "SA": {
+    "economicStrength": 26,
+    "taxTariffFriction": 61
+  },
+  "SE": {
+    "economicStrength": 44,
+    "taxTariffFriction": 35
+  },
+  "PL": {
+    "economicStrength": 52,
+    "taxTariffFriction": 35
+  },
+  "ID": {
+    "economicStrength": 54,
+    "taxTariffFriction": 61
   }
 }

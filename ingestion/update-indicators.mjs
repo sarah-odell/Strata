@@ -20,6 +20,13 @@ const countries = {
   IN: 'IND',
   BR: 'BRA',
   MX: 'MEX',
+  ES: 'ESP',
+  IT: 'ITA',
+  KR: 'KOR',
+  SA: 'SAU',
+  SE: 'SWE',
+  PL: 'POL',
+  ID: 'IDN',
 }
 
 const wbIndicators = {

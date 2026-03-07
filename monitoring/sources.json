@@ -115,5 +115,68 @@
     "url": "https://www.banxico.org.mx/publications-and-press/",
     "criticality": "medium",
     "materialKeywords": ["policy", "financial", "stability", "risk"]
+  },
+  {
+    "id": "es-bde-news",
+    "country": "ES",
+    "institution": "Bank of Spain",
+    "topic": "Financial policy and supervisory updates",
+    "url": "https://www.bde.es/wbe/en/noticias-eventos/notas-prensa/",
+    "criticality": "medium",
+    "materialKeywords": ["supervision", "stability", "policy", "risk"]
+  },
+  {
+    "id": "it-bdi-news",
+    "country": "IT",
+    "institution": "Banca d'Italia",
+    "topic": "Monetary and supervisory updates",
+    "url": "https://www.bancaditalia.it/media/notizia/index.html?com.dotmarketing.htmlpage.language=1",
+    "criticality": "medium",
+    "materialKeywords": ["supervision", "stability", "policy", "guidance"]
+  },
+  {
+    "id": "kr-bok-news",
+    "country": "KR",
+    "institution": "Bank of Korea",
+    "topic": "Macro-financial and market updates",
+    "url": "https://www.bok.or.kr/eng/bbs/E0000634/list.do?menuNo=400069",
+    "criticality": "medium",
+    "materialKeywords": ["stability", "financial", "policy", "risk"]
+  },
+  {
+    "id": "sa-sama-news",
+    "country": "SA",
+    "institution": "Saudi Central Bank",
+    "topic": "Financial policy and regulation",
+    "url": "https://www.sama.gov.sa/en-US/News/Pages/default.aspx",
+    "criticality": "high",
+    "materialKeywords": ["regulation", "supervision", "compliance", "policy"]
+  },
+  {
+    "id": "se-riksbank-news",
+    "country": "SE",
+    "institution": "Sveriges Riksbank",
+    "topic": "Monetary and financial stability communications",
+    "url": "https://www.riksbank.se/en-gb/press-and-published/",
+    "criticality": "medium",
+    "materialKeywords": ["financial stability", "policy", "risk", "supervision"]
+  },
+  {
+    "id": "pl-nbp-news",
+    "country": "PL",
+    "institution": "National Bank of Poland",
+    "topic": "Financial system and policy communications",
+    "url": "https://www.nbp.pl/home.aspx?f=/en/onbp/news.html",
+    "criticality": "medium",
+    "materialKeywords": ["policy", "stability", "risk", "supervision"]
+  },
+  {
+    "id": "id-bi-news",
+    "country": "ID",
+    "institution": "Bank Indonesia",
+    "topic": "Financial policy and regulatory updates",
+    "url": "https://www.bi.go.id/en/publikasi/ruang-media/news-release/default.aspx",
+    "criticality": "medium",
+    "materialKeywords": ["policy", "regulation", "stability", "risk"]
   }
 ]
