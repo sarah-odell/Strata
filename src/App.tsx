@@ -69,6 +69,7 @@ type ResearchResult = {
   countryCode: string
   sector: string
   strategy: string
+  prompt?: string
   runAt: string
   verdicts: ResearchVerdict[]
   aggregateScore: number
@@ -399,6 +400,7 @@ function App() {
   const [researchCountry, setResearchCountry] = useState<string>('US')
   const [researchSector, setResearchSector] = useState<string>(supportedSectors[0])
   const [researchStrategy, setResearchStrategy] = useState<Strategy>('Buyout')
+  const [researchPrompt, setResearchPrompt] = useState<string>('')
   const [researchStatus, setResearchStatus] = useState<'idle' | 'running' | 'completed' | 'failed'>('idle')
   const [researchResults, setResearchResults] = useState<ResearchResult[]>([])
   const [selectedResearch, setSelectedResearch] = useState<ResearchResult | null>(null)
@@ -481,6 +483,7 @@ function App() {
           country: countryName,
           sector: researchSector,
           strategy: researchStrategy,
+          prompt: researchPrompt || undefined,
         }),
       })
       const { jobId } = await response.json()
@@ -517,6 +520,7 @@ function App() {
           markets,
           sector: researchSector,
           strategy: researchStrategy,
+          prompt: researchPrompt || undefined,
         }),
       })
       const { jobs } = await response.json()
@@ -1073,7 +1077,16 @@ function App() {
 
           <section className="research-trigger-panel">
             <p className="weights-title">New Research</p>
-            <p className="prompt-subtitle">Select a market, sector, and strategy to deploy the research ensemble.</p>
+            <p className="prompt-subtitle">Describe your deal thesis, research question, or investment focus. The AI analysts will use this as context for their research.</p>
+            <label>
+              Research prompt
+              <textarea
+                className="research-prompt-input"
+                value={researchPrompt}
+                onChange={(e) => setResearchPrompt(e.target.value)}
+                placeholder="e.g. We're a $3B buyout fund evaluating industrial automation platforms in Germany. Key concerns: post-acquisition integration complexity, works council dynamics, and whether the Mittelstand succession pipeline is real or overhyped. We need current data on deal flow, leverage availability, and exit multiples for mid-market industrial tech."
+              />
+            </label>
             <div className="research-trigger-grid">
               <label>
                 Market
@@ -1174,6 +1187,9 @@ function App() {
                     <p className="prompt-subtitle">
                       {selectedResearch.strategy} · {new Date(selectedResearch.runAt).toLocaleDateString()} · {selectedResearch.verdicts.length} analysts
                     </p>
+                    {selectedResearch.prompt && (
+                      <p className="research-prompt-display">"{selectedResearch.prompt}"</p>
+                    )}
                   </div>
                   <div className="score-stack">
                     <p className="score">{selectedResearch.aggregateScore}</p>

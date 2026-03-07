@@ -3,6 +3,7 @@ export interface ResearchBrief {
   countryCode: string
   sector: string
   strategy: string
+  prompt?: string
 }
 
 export interface AnalystVerdict {
@@ -26,6 +27,7 @@ export interface EnsembleResult {
   countryCode: string
   sector: string
   strategy: string
+  prompt?: string
   runAt: string
   verdicts: AnalystVerdict[]
   aggregateScore: number

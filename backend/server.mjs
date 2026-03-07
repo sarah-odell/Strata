@@ -100,7 +100,7 @@ app.post('/api/monitor-runs', async (req, res) => {
 const researchJobs = new Map()
 
 app.post('/api/research', (req, res) => {
-  const { countryCode, country, sector, strategy, model, personas } = req.body
+  const { countryCode, country, sector, strategy, model, personas, prompt } = req.body
   if (!countryCode || !country || !sector || !strategy) {
     res.status(400).json({ error: 'countryCode, country, sector, and strategy are required.' })
     return
@@ -116,6 +116,7 @@ app.post('/api/research', (req, res) => {
   ]
   if (model) args.push('--model', model)
   if (personas) args.push('--personas', personas)
+  if (prompt) args.push('--prompt', prompt)
 
   const childEnv = { ...process.env }
   delete childEnv.CLAUDECODE
@@ -150,7 +151,7 @@ app.get('/api/research/jobs/:id', (req, res) => {
 })
 
 app.post('/api/research/batch', (req, res) => {
-  const { markets, sector, strategy, model, personas } = req.body
+  const { markets, sector, strategy, model, personas, prompt } = req.body
   if (!markets || !Array.isArray(markets) || !sector || !strategy) {
     res.status(400).json({ error: 'markets (array of {countryCode, country}), sector, and strategy are required.' })
     return
@@ -170,6 +171,7 @@ app.post('/api/research/batch', (req, res) => {
     ]
     if (model) args.push('--model', model)
     if (personas) args.push('--personas', personas)
+    if (prompt) args.push('--prompt', prompt)
 
     const childEnv = { ...process.env }
     delete childEnv.CLAUDECODE

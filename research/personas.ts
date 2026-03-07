@@ -113,6 +113,10 @@ const outputSchema = `{
 }`
 
 export function buildPrompt(persona: Persona, brief: ResearchBrief): string {
+  const userContext = brief.prompt
+    ? `\n## Deal Team Context\n\nThe deal team has provided the following research prompt — this is the PRIMARY driver of your analysis. Address their specific questions and concerns directly:\n\n"${brief.prompt}"\n\nUse this context to focus your research. Every section of your output should be relevant to what they're asking.\n`
+    : ''
+
   return `You are a ${persona.label}.
 
 ${persona.systemPrompt}
@@ -122,7 +126,7 @@ ${persona.systemPrompt}
 Country: ${brief.country} (${brief.countryCode})
 Sector: ${brief.sector}
 Strategy: ${brief.strategy}
-
+${userContext}
 ## Your Focus
 
 ${persona.focusTemplate(brief)}

@@ -102,6 +102,7 @@ export async function runEnsemble(
     countryCode: brief.countryCode,
     sector: brief.sector,
     strategy: brief.strategy,
+    prompt: brief.prompt,
     runAt: new Date().toISOString(),
     verdicts,
     aggregateScore,

@@ -19,6 +19,7 @@ const strategy = arg('--strategy', 'Buyout')!
 const runtimeType = arg('--runtime', 'local') as 'local' | 'sandbox'
 const model = arg('--model')
 const personaFilter = arg('--personas')
+const userPrompt = arg('--prompt')
 
 const outputDir = path.join(process.cwd(), '.strata', 'research')
 
@@ -27,6 +28,7 @@ const brief: ResearchBrief = {
   countryCode: country,
   sector,
   strategy,
+  prompt: userPrompt,
 }
 
 const runtimeConfig: RuntimeConfig = runtimeType === 'sandbox'
