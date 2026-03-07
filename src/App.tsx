@@ -13,7 +13,7 @@ import {
 } from './lib/scoring'
 
 const strategies: Strategy[] = ['Buyout', 'Growth', 'Low-Risk Entry']
-type ViewMode = 'radar' | 'definitions'
+type ViewMode = 'radar' | 'dealLab' | 'definitions'
 type RankingView = 'cards' | 'table'
 const scenarioOptions: { label: string; value: ScenarioCase }[] = [
   { label: 'Base Case', value: 'base' },
@@ -406,6 +406,13 @@ function App() {
         </button>
         <button
           type="button"
+          className={viewMode === 'dealLab' ? 'view-btn active' : 'view-btn'}
+          onClick={() => setViewMode('dealLab')}
+        >
+          Deal Lab
+        </button>
+        <button
+          type="button"
           className={viewMode === 'definitions' ? 'view-btn active' : 'view-btn'}
           onClick={() => setViewMode('definitions')}
         >
@@ -439,56 +446,6 @@ function App() {
             </label>
           </section>
 
-          <section className="adjacency-panel">
-            <p className="weights-title">Portfolio Adjacency Inputs</p>
-            <p className="prompt-subtitle">
-              Add existing portfolio footprint so ranking captures expansion adjacencies.
-            </p>
-            <p className="adjacency-label">Existing portfolio sectors</p>
-            <div className="chip-grid">
-              {supportedSectors.map((item) => (
-                <button
-                  key={`adj-sector-${item}`}
-                  type="button"
-                  className={portfolioSectors.includes(item) ? 'scenario-btn active' : 'scenario-btn'}
-                  onClick={() => setPortfolioSectors((current) => toggleItem(current, item))}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-            <p className="adjacency-label">Existing portfolio regions</p>
-            <div className="chip-grid">
-              {regionOptions.map((region) => (
-                <button
-                  key={`adj-region-${region}`}
-                  type="button"
-                  className={portfolioRegions.includes(region) ? 'scenario-btn active' : 'scenario-btn'}
-                  onClick={() => setPortfolioRegions((current) => toggleItem(current, region))}
-                >
-                  {region}
-                </button>
-              ))}
-            </div>
-            <p className="adjacency-label">In-house capabilities</p>
-            <div className="chip-grid">
-              {capabilityOptions.map((capability) => (
-                <button
-                  key={`adj-capability-${capability.value}`}
-                  type="button"
-                  className={
-                    portfolioCapabilities.includes(capability.value) ? 'scenario-btn active' : 'scenario-btn'
-                  }
-                  onClick={() =>
-                    setPortfolioCapabilities((current) => toggleItem(current, capability.value))
-                  }
-                >
-                  {capability.label}
-                </button>
-              ))}
-            </div>
-          </section>
-
           <section className="scenario-toggle">
             {scenarioOptions.map((scenario) => (
               <button
@@ -517,60 +474,6 @@ function App() {
           <p className="deal-size-note">
             Deal size bands are based on target enterprise value.
           </p>
-
-          <section className="prompt-tool">
-            <p className="weights-title">Deal Team Prompt</p>
-            <p className="prompt-subtitle">
-              Enter your deal context to generate a tailored top-3 recommendation view.
-            </p>
-            <label>
-              Prompt
-              <textarea
-                value={dealPrompt}
-                onChange={(event) => setDealPrompt(event.target.value)}
-                placeholder="I am a $2B fund evaluating expansion options in Germany for aerospace & defense. Where should we prioritize?"
-              />
-            </label>
-            <label>
-              Fund size (USD millions)
-              <input
-                type="text"
-                value={fundSizeInput}
-                onChange={(event) => setFundSizeInput(event.target.value)}
-                placeholder="2000"
-              />
-            </label>
-
-            <div className="prompt-assumptions">
-              <span>Strategy: {promptAssumptions.strategy}</span>
-              <span>Sector: {promptAssumptions.sector}</span>
-              <span>Scenario: {scenarioLabel[promptAssumptions.scenarioCase]}</span>
-              <span>Deal size: {dealSizeOptions.find((option) => option.value === promptAssumptions.dealSize)?.label}</span>
-              {targetCountry ? <span>Target country detected: {targetCountry.name}</span> : null}
-            </div>
-
-            <div className="prompt-results">
-              {tailoredTopThree.map((profile, index) => (
-                <article key={`tailored-${profile.code}`} className="prompt-result-card">
-                  <p className="top-rank">{podiumLabels[index]}</p>
-                  <h4>{profile.name}</h4>
-                  <p className="top-score">Score {profile.scenarioScore}</p>
-                  <p className={badgeClass(profile.scenarioRecommendation)}>{profile.scenarioRecommendation}</p>
-                  <p className="summary">
-                    Why: strong {topStrengths(profile, promptAssumptions.strategy).join(' + ')} under{' '}
-                    {promptAssumptions.strategy.toLowerCase()} weighting.
-                  </p>
-                </article>
-              ))}
-            </div>
-
-            {targetCountryPosition ? (
-              <p className="prompt-target-note">
-                Target country position: <strong>#{targetCountryPosition}</strong> ({targetCountry?.name}) in
-                the tailored ranking.
-              </p>
-            ) : null}
-          </section>
 
           <section className="grid-header">
             <div className="grid-header-top">
@@ -856,6 +759,112 @@ function App() {
               </table>
             </section>
           )}
+        </>
+      ) : viewMode === 'dealLab' ? (
+        <>
+          <section className="adjacency-panel">
+            <p className="weights-title">Portfolio Adjacency Inputs</p>
+            <p className="prompt-subtitle">
+              Add existing portfolio footprint so ranking captures expansion adjacencies.
+            </p>
+            <p className="adjacency-label">Existing portfolio sectors</p>
+            <div className="chip-grid">
+              {supportedSectors.map((item) => (
+                <button
+                  key={`adj-sector-${item}`}
+                  type="button"
+                  className={portfolioSectors.includes(item) ? 'scenario-btn active' : 'scenario-btn'}
+                  onClick={() => setPortfolioSectors((current) => toggleItem(current, item))}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+            <p className="adjacency-label">Existing portfolio regions</p>
+            <div className="chip-grid">
+              {regionOptions.map((region) => (
+                <button
+                  key={`adj-region-${region}`}
+                  type="button"
+                  className={portfolioRegions.includes(region) ? 'scenario-btn active' : 'scenario-btn'}
+                  onClick={() => setPortfolioRegions((current) => toggleItem(current, region))}
+                >
+                  {region}
+                </button>
+              ))}
+            </div>
+            <p className="adjacency-label">In-house capabilities</p>
+            <div className="chip-grid">
+              {capabilityOptions.map((capability) => (
+                <button
+                  key={`adj-capability-${capability.value}`}
+                  type="button"
+                  className={
+                    portfolioCapabilities.includes(capability.value) ? 'scenario-btn active' : 'scenario-btn'
+                  }
+                  onClick={() =>
+                    setPortfolioCapabilities((current) => toggleItem(current, capability.value))
+                  }
+                >
+                  {capability.label}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="prompt-tool">
+            <p className="weights-title">Deal Team Prompt</p>
+            <p className="prompt-subtitle">
+              Enter your deal context to generate a tailored top-3 recommendation view.
+            </p>
+            <label>
+              Prompt
+              <textarea
+                value={dealPrompt}
+                onChange={(event) => setDealPrompt(event.target.value)}
+                placeholder="I am a $2B fund evaluating expansion options in Germany for aerospace & defense. Where should we prioritize?"
+              />
+            </label>
+            <label>
+              Fund size (USD millions)
+              <input
+                type="text"
+                value={fundSizeInput}
+                onChange={(event) => setFundSizeInput(event.target.value)}
+                placeholder="2000"
+              />
+            </label>
+
+            <div className="prompt-assumptions">
+              <span>Strategy: {promptAssumptions.strategy}</span>
+              <span>Sector: {promptAssumptions.sector}</span>
+              <span>Scenario: {scenarioLabel[promptAssumptions.scenarioCase]}</span>
+              <span>Deal size: {dealSizeOptions.find((option) => option.value === promptAssumptions.dealSize)?.label}</span>
+              {targetCountry ? <span>Target country detected: {targetCountry.name}</span> : null}
+            </div>
+
+            <div className="prompt-results">
+              {tailoredTopThree.map((profile, index) => (
+                <article key={`tailored-${profile.code}`} className="prompt-result-card">
+                  <p className="top-rank">{podiumLabels[index]}</p>
+                  <h4>{profile.name}</h4>
+                  <p className="top-score">Score {profile.scenarioScore}</p>
+                  <p className={badgeClass(profile.scenarioRecommendation)}>{profile.scenarioRecommendation}</p>
+                  <p className="summary">
+                    Why: strong {topStrengths(profile, promptAssumptions.strategy).join(' + ')} under{' '}
+                    {promptAssumptions.strategy.toLowerCase()} weighting.
+                  </p>
+                </article>
+              ))}
+            </div>
+
+            {targetCountryPosition ? (
+              <p className="prompt-target-note">
+                Target country position: <strong>#{targetCountryPosition}</strong> ({targetCountry?.name}) in
+                the tailored ranking.
+              </p>
+            ) : null}
+          </section>
         </>
       ) : (
         <section className="definitions-panel">

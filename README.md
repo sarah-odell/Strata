@@ -4,6 +4,11 @@ Live site: [https://sarah-odell.github.io/Strata/](https://sarah-odell.github.io
 
 Strata is a PE/corp-dev decision support tool for market expansion screening.
 
+App sections:
+- `Radar`: scoring, ranking table/cards, and deal profile radar chart
+- `Deal Lab`: portfolio adjacency inputs and prompt-based tailored recommendations
+- `Industry Definitions`: shared taxonomy and strategy/deal-size definitions
+
 ## What it does
 - Scores countries by strategy and industry.
 - Shows transparent factor scoring with citations.
