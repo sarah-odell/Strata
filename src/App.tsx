@@ -559,95 +559,6 @@ function App() {
             ))}
           </section>
 
-          <section className="radar-panel">
-            <div className="radar-header">
-              <div>
-                <p className="weights-title">Deal Profile Radar</p>
-                <p className="prompt-subtitle">
-                  Instant profile view across market, growth, technology, customer quality, and risks.
-                </p>
-              </div>
-              <label className="radar-selector">
-                Country
-                <select value={radarCountryCode} onChange={(event) => setRadarCountryCode(event.target.value)}>
-                  {ranked.map((profile) => (
-                    <option key={`radar-${profile.code}`} value={profile.code}>
-                      {profile.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            <div className="radar-layout">
-              <svg
-                viewBox={`0 0 ${radarSize} ${radarSize}`}
-                role="img"
-                aria-label={`Deal profile radar for ${radarProfile.name}`}
-                className="radar-chart"
-              >
-                {radarLevels.map((level) => {
-                  const ringPoints = radarMetrics
-                    .map((_, index) => {
-                      const point = radarPoint(
-                        index,
-                        radarMetrics.length,
-                        level,
-                        radarCenter,
-                        radarCenter,
-                        radarRadius,
-                      )
-                      return `${point.x},${point.y}`
-                    })
-                    .join(' ')
-                  return (
-                    <polygon
-                      key={`ring-${level}`}
-                      points={ringPoints}
-                      fill="none"
-                      stroke="rgba(255,255,255,0.12)"
-                      strokeWidth="1"
-                    />
-                  )
-                })}
-
-                {radarMetrics.map((_, index) => {
-                  const end = radarPoint(index, radarMetrics.length, 100, radarCenter, radarCenter, radarRadius)
-                  return (
-                    <line
-                      key={`axis-${index}`}
-                      x1={radarCenter}
-                      y1={radarCenter}
-                      x2={end.x}
-                      y2={end.y}
-                      stroke="rgba(255,255,255,0.18)"
-                      strokeWidth="1"
-                    />
-                  )
-                })}
-
-                <polygon
-                  points={radarPolygonPoints}
-                  fill="rgba(245, 158, 11, 0.22)"
-                  stroke="rgba(245, 158, 11, 0.9)"
-                  strokeWidth="2"
-                />
-              </svg>
-
-              <div className="radar-legend">
-                {radarMetrics.map((metric) => (
-                  <p key={`legend-${metric.label}`}>
-                    <span>{metric.label}</span>
-                    <strong>{metric.value}</strong>
-                  </p>
-                ))}
-                <p className="radar-note">
-                  Risk axes are displayed as risk intensity (higher value = higher risk).
-                </p>
-              </div>
-            </div>
-          </section>
-
           {rankingView === 'cards' ? (
             <section className="country-grid">
               {ranked.map((profile, index) => {
@@ -891,6 +802,95 @@ function App() {
                 the tailored ranking.
               </p>
             ) : null}
+          </section>
+
+          <section className="radar-panel">
+            <div className="radar-header">
+              <div>
+                <p className="weights-title">Deal Profile Radar</p>
+                <p className="prompt-subtitle">
+                  Instant profile view across market, growth, technology, customer quality, and risks.
+                </p>
+              </div>
+              <label className="radar-selector">
+                Country
+                <select value={radarCountryCode} onChange={(event) => setRadarCountryCode(event.target.value)}>
+                  {ranked.map((profile) => (
+                    <option key={`radar-${profile.code}`} value={profile.code}>
+                      {profile.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <div className="radar-layout">
+              <svg
+                viewBox={`0 0 ${radarSize} ${radarSize}`}
+                role="img"
+                aria-label={`Deal profile radar for ${radarProfile.name}`}
+                className="radar-chart"
+              >
+                {radarLevels.map((level) => {
+                  const ringPoints = radarMetrics
+                    .map((_, index) => {
+                      const point = radarPoint(
+                        index,
+                        radarMetrics.length,
+                        level,
+                        radarCenter,
+                        radarCenter,
+                        radarRadius,
+                      )
+                      return `${point.x},${point.y}`
+                    })
+                    .join(' ')
+                  return (
+                    <polygon
+                      key={`ring-${level}`}
+                      points={ringPoints}
+                      fill="none"
+                      stroke="rgba(255,255,255,0.12)"
+                      strokeWidth="1"
+                    />
+                  )
+                })}
+
+                {radarMetrics.map((_, index) => {
+                  const end = radarPoint(index, radarMetrics.length, 100, radarCenter, radarCenter, radarRadius)
+                  return (
+                    <line
+                      key={`axis-${index}`}
+                      x1={radarCenter}
+                      y1={radarCenter}
+                      x2={end.x}
+                      y2={end.y}
+                      stroke="rgba(255,255,255,0.18)"
+                      strokeWidth="1"
+                    />
+                  )
+                })}
+
+                <polygon
+                  points={radarPolygonPoints}
+                  fill="rgba(245, 158, 11, 0.22)"
+                  stroke="rgba(245, 158, 11, 0.9)"
+                  strokeWidth="2"
+                />
+              </svg>
+
+              <div className="radar-legend">
+                {radarMetrics.map((metric) => (
+                  <p key={`legend-${metric.label}`}>
+                    <span>{metric.label}</span>
+                    <strong>{metric.value}</strong>
+                  </p>
+                ))}
+                <p className="radar-note">
+                  Risk axes are displayed as risk intensity (higher value = higher risk).
+                </p>
+              </div>
+            </div>
           </section>
         </>
       ) : (
