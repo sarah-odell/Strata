@@ -902,6 +902,22 @@ function App() {
           </article>
 
           <article className="definition-card">
+            <h4>Scenario Case Definitions</h4>
+            <p>
+              <strong>Base Case:</strong> Most likely operating environment under current macro and
+              policy assumptions.
+            </p>
+            <p>
+              <strong>Bull Case:</strong> Upside environment where demand, execution, and policy
+              conditions are more favorable than baseline.
+            </p>
+            <p>
+              <strong>Bear Case:</strong> Downside environment with weaker growth, higher friction,
+              or elevated geopolitical/regulatory pressure.
+            </p>
+          </article>
+
+          <article className="definition-card">
             <h4>Deal Size Definitions</h4>
             <p>
               <strong>Small Deal:</strong> {dealSizeRanges.small}

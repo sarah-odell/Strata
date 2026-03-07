@@ -62,6 +62,11 @@ Strategies:
 - `Growth`
 - `Low-Risk Entry`
 
+Scenario cases:
+- `Base Case`: Most likely operating environment under current macro and policy assumptions.
+- `Bull Case`: Upside environment with stronger demand/execution and more favorable policy conditions.
+- `Bear Case`: Downside environment with weaker growth and higher regulatory/geopolitical friction.
+
 Deal size bands:
 - `Small Deal`: Under $250 million enterprise value
 - `Mid Deal`: $250 million to $1 billion enterprise value
