@@ -255,7 +255,7 @@ function App() {
   const [dealSize, setDealSize] = useState<DealSize>('mid')
   const [expandedCountryCode, setExpandedCountryCode] = useState<string | null>('US')
   const [dealPrompt, setDealPrompt] = useState<string>(
-    'I am a $2B fund looking to expand in Germany in industrial technology. Where should I go?',
+    'We run a control-focused fund and need our next platform in a politically stable OECD market with strong logistics density and manageable execution risk; we are considering an initial foothold in the Netherlands.',
   )
   const [fundSizeInput, setFundSizeInput] = useState<string>('2000')
 
