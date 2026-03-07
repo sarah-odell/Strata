@@ -5,6 +5,7 @@ import { rankCountries, strategyWeights, type ScoredCountry, type Strategy } fro
 
 const strategies: Strategy[] = ['Buyout', 'Growth', 'Low-Risk Entry']
 type ViewMode = 'radar' | 'definitions'
+const podiumLabels = ['1st place', '2nd place', '3rd place'] as const
 
 const factorLabel = (key: FactorKey): string =>
   key.replace(/([A-Z])/g, ' $1').replace(/^./, (letter) => letter.toUpperCase())
@@ -103,7 +104,7 @@ function App() {
           <section className="top-three-grid">
             {topThree.map((profile, index) => (
               <article key={`top-${profile.code}`} className="top-market-card">
-                <p className="top-rank">Top {index + 1}</p>
+                <p className="top-rank">{podiumLabels[index] ?? `${index + 1}th place`}</p>
                 <h4>{profile.name}</h4>
                 <p className="region">{profile.region}</p>
                 <p className="top-score">Score {profile.overallScore}</p>
