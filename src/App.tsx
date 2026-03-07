@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import './App.css'
 import { countryProfiles, supportedSectors, type FactorKey } from './data/countries'
 import {
@@ -323,7 +323,6 @@ function App() {
   const [portfolioSectors, setPortfolioSectors] = useState<string[]>([])
   const [portfolioRegions, setPortfolioRegions] = useState<string[]>([])
   const [portfolioCapabilities, setPortfolioCapabilities] = useState<PortfolioCapability[]>([])
-  const [radarCountryCode, setRadarCountryCode] = useState<string>('US')
 
   const regionOptions = useMemo(
     () => Array.from(new Set(countryProfiles.map((profile) => profile.region))),
@@ -359,17 +358,20 @@ function App() {
     [promptAssumptions, portfolioAdjacency],
   )
   const tailoredTopThree = tailoredRanked.slice(0, 3)
-  const targetCountry = promptAssumptions.targetCountryCode
-    ? countryProfiles.find((country) => country.code === promptAssumptions.targetCountryCode)
+  const targetCountryProfile = promptAssumptions.targetCountryCode
+    ? tailoredRanked.find((country) => country.code === promptAssumptions.targetCountryCode)
     : null
   const targetCountryPosition =
-    promptAssumptions.targetCountryCode === null
+    promptAssumptions.targetCountryCode === null || targetCountryProfile === null
       ? null
       : tailoredRanked.findIndex((country) => country.code === promptAssumptions.targetCountryCode) + 1
 
   const topThree = ranked.slice(0, 3)
   const trackedCountries = ranked.length
-  const radarProfile = ranked.find((profile) => profile.code === radarCountryCode) ?? ranked[0]
+  const radarProfile = targetCountryProfile ?? tailoredRanked[0] ?? ranked[0]
+  const radarContextLabel = targetCountryProfile
+    ? `Prompt target market: ${targetCountryProfile.name}`
+    : `Top tailored market: ${radarProfile.name}`
   const radarMetrics = dealProfileMetrics(radarProfile)
   const radarSize = 320
   const radarCenter = radarSize / 2
@@ -382,32 +384,18 @@ function App() {
     })
     .join(' ')
 
-  useEffect(() => {
-    if (strategy !== promptAssumptions.strategy) {
-      setStrategy(promptAssumptions.strategy)
-    }
-
-    if (sector !== promptAssumptions.sector) {
-      setSector(promptAssumptions.sector)
-    }
-
-    if (scenarioCase !== promptAssumptions.scenarioCase) {
-      setScenarioCase(promptAssumptions.scenarioCase)
-    }
-
-    if (dealSize !== promptAssumptions.dealSize) {
-      setDealSize(promptAssumptions.dealSize)
-    }
-  }, [
-    dealSize,
-    promptAssumptions.dealSize,
-    promptAssumptions.scenarioCase,
-    promptAssumptions.sector,
-    promptAssumptions.strategy,
-    scenarioCase,
-    sector,
-    strategy,
-  ])
+  const applyPromptDrivenSelections = (nextPrompt: string, nextFundSizeInput: string) => {
+    const inferred = inferAssumptions(nextPrompt, nextFundSizeInput, {
+      strategy,
+      sector,
+      scenarioCase,
+      dealSize,
+    })
+    setStrategy(inferred.strategy)
+    setSector(inferred.sector)
+    setScenarioCase(inferred.scenarioCase)
+    setDealSize(inferred.dealSize)
+  }
 
   return (
     <main className="app-shell">
@@ -759,7 +747,11 @@ function App() {
               Prompt
               <textarea
                 value={dealPrompt}
-                onChange={(event) => setDealPrompt(event.target.value)}
+                onChange={(event) => {
+                  const nextPrompt = event.target.value
+                  setDealPrompt(nextPrompt)
+                  applyPromptDrivenSelections(nextPrompt, fundSizeInput)
+                }}
                 placeholder="I am a $2B fund evaluating expansion options in Germany for aerospace & defense. Where should we prioritize?"
               />
             </label>
@@ -768,7 +760,11 @@ function App() {
               <input
                 type="text"
                 value={fundSizeInput}
-                onChange={(event) => setFundSizeInput(event.target.value)}
+                onChange={(event) => {
+                  const nextFundSize = event.target.value
+                  setFundSizeInput(nextFundSize)
+                  applyPromptDrivenSelections(dealPrompt, nextFundSize)
+                }}
                 placeholder="2000"
               />
             </label>
@@ -778,7 +774,7 @@ function App() {
               <span>Sector: {promptAssumptions.sector}</span>
               <span>Scenario: {scenarioLabel[promptAssumptions.scenarioCase]}</span>
               <span>Deal size: {dealSizeOptions.find((option) => option.value === promptAssumptions.dealSize)?.label}</span>
-              {targetCountry ? <span>Target country detected: {targetCountry.name}</span> : null}
+              {targetCountryProfile ? <span>Target country detected: {targetCountryProfile.name}</span> : null}
             </div>
 
             <div className="prompt-results">
@@ -798,7 +794,7 @@ function App() {
 
             {targetCountryPosition ? (
               <p className="prompt-target-note">
-                Target country position: <strong>#{targetCountryPosition}</strong> ({targetCountry?.name}) in
+                Target country position: <strong>#{targetCountryPosition}</strong> ({targetCountryProfile?.name}) in
                 the tailored ranking.
               </p>
             ) : null}
@@ -812,16 +808,7 @@ function App() {
                   Instant profile view across market, growth, technology, customer quality, and risks.
                 </p>
               </div>
-              <label className="radar-selector">
-                Country
-                <select value={radarCountryCode} onChange={(event) => setRadarCountryCode(event.target.value)}>
-                  {ranked.map((profile) => (
-                    <option key={`radar-${profile.code}`} value={profile.code}>
-                      {profile.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <p className="radar-context">{radarContextLabel}</p>
             </div>
 
             <div className="radar-layout">

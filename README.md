@@ -6,7 +6,7 @@ Strata is a PE/corp-dev decision support tool for market expansion screening.
 
 App sections:
 - `Radar`: scoring, ranking table/cards, and transparent factor breakdowns
-- `Deal Lab`: portfolio adjacency inputs, prompt-based tailored recommendations, and deal profile radar chart
+- `Deal Lab`: portfolio adjacency inputs, prompt-based tailored recommendations, and a deal profile radar chart auto-bound to prompt context
 - `Industry Definitions`: shared taxonomy and strategy/deal-size definitions
 
 ## What it does

@@ -394,8 +394,14 @@ input:focus {
   gap: 1rem;
 }
 
-.radar-selector {
-  min-width: 220px;
+.radar-context {
+  margin: 0;
+  padding: 0.36rem 0.66rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.03);
+  color: #d8dce7;
+  font-size: 0.8rem;
 }
 
 .radar-layout {
@@ -832,10 +838,6 @@ ul {
 
   .radar-header {
     flex-direction: column;
-  }
-
-  .radar-selector {
-    min-width: 100%;
   }
 
   .radar-layout {
