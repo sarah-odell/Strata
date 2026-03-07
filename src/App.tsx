@@ -28,6 +28,19 @@ const dealSizeRanges: Record<DealSize, string> = {
   large: 'Over $1B enterprise value',
 }
 const podiumLabels = ['1st place', '2nd place', '3rd place'] as const
+const scenarioLabel: Record<ScenarioCase, string> = {
+  base: 'Base Case',
+  bull: 'Bull Case',
+  bear: 'Bear Case',
+}
+
+type PromptAssumptions = {
+  strategy: Strategy
+  sector: string
+  scenarioCase: ScenarioCase
+  dealSize: DealSize
+  targetCountryCode: string | null
+}
 
 const factorLabel = (key: FactorKey): string =>
   key.replace(/([A-Z])/g, ' $1').replace(/^./, (letter) => letter.toUpperCase())
@@ -56,6 +69,166 @@ const badgeClass = (recommendation: ScoredCountry['recommendation']): string => 
   return 'badge badge-avoid'
 }
 
+const parseMoneyToMillions = (raw: string): number | null => {
+  const normalized = raw.trim().toLowerCase().replace(/,/g, '')
+  if (!normalized) {
+    return null
+  }
+
+  const match = normalized.match(/(\d+(?:\.\d+)?)\s*([mbk]|bn|mm|million|billion)?/)
+  if (!match) {
+    return null
+  }
+
+  const value = Number(match[1])
+  const unit = match[2] ?? 'm'
+
+  if (!Number.isFinite(value)) {
+    return null
+  }
+
+  if (unit === 'b' || unit === 'bn' || unit === 'billion') {
+    return value * 1000
+  }
+
+  if (unit === 'k') {
+    return value / 1000
+  }
+
+  return value
+}
+
+const dealSizeFromMillions = (valueMillions: number | null): DealSize | null => {
+  if (valueMillions === null) {
+    return null
+  }
+
+  if (valueMillions < 250) {
+    return 'small'
+  }
+
+  if (valueMillions <= 1000) {
+    return 'mid'
+  }
+
+  return 'large'
+}
+
+const countryAliases: Record<string, string> = {
+  usa: 'US',
+  'united states': 'US',
+  us: 'US',
+  germany: 'DE',
+  deutschland: 'DE',
+  singapore: 'SG',
+  canada: 'CA',
+  uae: 'AE',
+  'united arab emirates': 'AE',
+  uk: 'GB',
+  'united kingdom': 'GB',
+  britain: 'GB',
+  france: 'FR',
+  netherlands: 'NL',
+  holland: 'NL',
+  japan: 'JP',
+  australia: 'AU',
+  india: 'IN',
+  brazil: 'BR',
+  mexico: 'MX',
+  spain: 'ES',
+  italy: 'IT',
+  'south korea': 'KR',
+  korea: 'KR',
+  'saudi arabia': 'SA',
+  sweden: 'SE',
+  poland: 'PL',
+  indonesia: 'ID',
+}
+
+const inferTargetCountry = (prompt: string): string | null => {
+  const normalized = prompt.toLowerCase()
+  const aliasEntries = Object.entries(countryAliases).sort((a, b) => b[0].length - a[0].length)
+
+  for (const [alias, code] of aliasEntries) {
+    const escaped = alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const pattern = new RegExp(`\\b${escaped}\\b`, 'i')
+    if (pattern.test(normalized)) {
+      return code
+    }
+  }
+
+  return null
+}
+
+const inferAssumptions = (
+  prompt: string,
+  fundSizeInput: string,
+  defaults: { strategy: Strategy; sector: string; scenarioCase: ScenarioCase; dealSize: DealSize },
+): PromptAssumptions => {
+  const normalized = prompt.toLowerCase()
+
+  const inferredStrategy =
+    normalized.includes('low risk') ||
+    normalized.includes('conservative') ||
+    normalized.includes('downside')
+      ? 'Low-Risk Entry'
+      : normalized.includes('growth') || normalized.includes('scale')
+        ? 'Growth'
+        : normalized.includes('buyout') || normalized.includes('control') || normalized.includes('lbo')
+          ? 'Buyout'
+          : defaults.strategy
+
+  const inferredScenario =
+    normalized.includes('bull') || normalized.includes('upside') || normalized.includes('aggressive')
+      ? 'bull'
+      : normalized.includes('bear') || normalized.includes('recession') || normalized.includes('stress')
+        ? 'bear'
+        : defaults.scenarioCase
+
+  const inferredSector = supportedSectors.find((candidate) => {
+    const token = candidate.toLowerCase()
+    return normalized.includes(token) || normalized.includes(token.replace(' & ', ' and '))
+  })
+
+  const fallbackSector = normalized.includes('health') || normalized.includes('care')
+    ? 'Healthcare Services'
+    : normalized.includes('aerospace') || normalized.includes('defense')
+      ? 'Aerospace & Defense'
+      : normalized.includes('industrial') || normalized.includes('manufacturing')
+        ? 'Industrial Technology'
+        : normalized.includes('professional services') || normalized.includes('business services')
+          ? 'Professional Services'
+          : defaults.sector
+
+  const dealSizeFromPrompt = dealSizeFromMillions(parseMoneyToMillions(prompt))
+  const fundSizeMillions = parseMoneyToMillions(fundSizeInput)
+  const dealSizeFromFundHeuristic =
+    fundSizeMillions === null ? null : dealSizeFromMillions(fundSizeMillions * 0.3)
+
+  return {
+    strategy: inferredStrategy,
+    sector: inferredSector ?? fallbackSector,
+    scenarioCase: inferredScenario,
+    dealSize: dealSizeFromPrompt ?? dealSizeFromFundHeuristic ?? defaults.dealSize,
+    targetCountryCode: inferTargetCountry(prompt),
+  }
+}
+
+const topStrengths = (profile: ScoredCountry, strategy: Strategy): string[] => {
+  return strategyWeights[strategy]
+    .map((factor) => {
+      const raw = profile.factors[factor.key]
+      const directional = factor.invert ? 100 - raw : raw
+      return {
+        key: factor.key,
+        weighted: directional * factor.weight,
+      }
+    })
+    .sort((a, b) => b.weighted - a.weighted)
+    .slice(0, 2)
+    .map((item) => factorLabel(item.key))
+}
+
 function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('radar')
   const [sector, setSector] = useState<string>(supportedSectors[0])
@@ -63,11 +236,38 @@ function App() {
   const [scenarioCase, setScenarioCase] = useState<ScenarioCase>('base')
   const [dealSize, setDealSize] = useState<DealSize>('mid')
   const [expandedCountryCode, setExpandedCountryCode] = useState<string | null>('US')
+  const [dealPrompt, setDealPrompt] = useState<string>(
+    'I am a $2B fund looking to expand in Germany in industrial technology. Where should I go?',
+  )
+  const [fundSizeInput, setFundSizeInput] = useState<string>('2000')
 
   const ranked = useMemo(
     () => rankCountries(countryProfiles, sector, strategy, scenarioCase, dealSize),
     [sector, strategy, scenarioCase, dealSize],
   )
+  const promptAssumptions = useMemo(
+    () => inferAssumptions(dealPrompt, fundSizeInput, { strategy, sector, scenarioCase, dealSize }),
+    [dealPrompt, fundSizeInput, strategy, sector, scenarioCase, dealSize],
+  )
+  const tailoredRanked = useMemo(
+    () =>
+      rankCountries(
+        countryProfiles,
+        promptAssumptions.sector,
+        promptAssumptions.strategy,
+        promptAssumptions.scenarioCase,
+        promptAssumptions.dealSize,
+      ),
+    [promptAssumptions],
+  )
+  const tailoredTopThree = tailoredRanked.slice(0, 3)
+  const targetCountry = promptAssumptions.targetCountryCode
+    ? countryProfiles.find((country) => country.code === promptAssumptions.targetCountryCode)
+    : null
+  const targetCountryPosition =
+    promptAssumptions.targetCountryCode === null
+      ? null
+      : tailoredRanked.findIndex((country) => country.code === promptAssumptions.targetCountryCode) + 1
 
   const topThree = ranked.slice(0, 3)
   const trackedCountries = ranked.length
@@ -157,6 +357,60 @@ function App() {
           <p className="deal-size-note">
             Deal size bands are based on target enterprise value.
           </p>
+
+          <section className="prompt-tool">
+            <p className="weights-title">Deal Team Prompt</p>
+            <p className="prompt-subtitle">
+              Enter your deal context to generate a tailored top-3 recommendation view.
+            </p>
+            <label>
+              Prompt
+              <textarea
+                value={dealPrompt}
+                onChange={(event) => setDealPrompt(event.target.value)}
+                placeholder="I am a $2B fund evaluating expansion options in Germany for aerospace & defense. Where should we prioritize?"
+              />
+            </label>
+            <label>
+              Fund size (USD millions)
+              <input
+                type="text"
+                value={fundSizeInput}
+                onChange={(event) => setFundSizeInput(event.target.value)}
+                placeholder="2000"
+              />
+            </label>
+
+            <div className="prompt-assumptions">
+              <span>Strategy: {promptAssumptions.strategy}</span>
+              <span>Sector: {promptAssumptions.sector}</span>
+              <span>Scenario: {scenarioLabel[promptAssumptions.scenarioCase]}</span>
+              <span>Deal size: {dealSizeOptions.find((option) => option.value === promptAssumptions.dealSize)?.label}</span>
+              {targetCountry ? <span>Target country detected: {targetCountry.name}</span> : null}
+            </div>
+
+            <div className="prompt-results">
+              {tailoredTopThree.map((profile, index) => (
+                <article key={`tailored-${profile.code}`} className="prompt-result-card">
+                  <p className="top-rank">{podiumLabels[index]}</p>
+                  <h4>{profile.name}</h4>
+                  <p className="top-score">Score {profile.scenarioScore}</p>
+                  <p className={badgeClass(profile.scenarioRecommendation)}>{profile.scenarioRecommendation}</p>
+                  <p className="summary">
+                    Why: strong {topStrengths(profile, promptAssumptions.strategy).join(' + ')} under{' '}
+                    {promptAssumptions.strategy.toLowerCase()} weighting.
+                  </p>
+                </article>
+              ))}
+            </div>
+
+            {targetCountryPosition ? (
+              <p className="prompt-target-note">
+                Target country position: <strong>#{targetCountryPosition}</strong> ({targetCountry?.name}) in
+                the tailored ranking.
+              </p>
+            ) : null}
+          </section>
 
           <section className="grid-header">
             <h3>Country ranking ({trackedCountries} markets)</h3>

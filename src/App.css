@@ -195,6 +195,87 @@ select:focus {
   background: rgba(18, 18, 26, 0.58);
 }
 
+.prompt-tool {
+  margin-top: 1.45rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: rgba(18, 18, 26, 0.46);
+  padding: 1.08rem;
+}
+
+.prompt-subtitle {
+  margin: 0.35rem 0 0.9rem;
+  color: var(--muted-foreground);
+}
+
+textarea,
+input {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.68rem 0.75rem;
+  font-size: 0.94rem;
+  background: rgba(18, 18, 26, 0.45);
+  color: var(--foreground);
+  transition: all 200ms ease-out;
+  font-family: inherit;
+}
+
+textarea {
+  min-height: 5.8rem;
+  resize: vertical;
+}
+
+input {
+  height: 2.8rem;
+}
+
+textarea:hover,
+input:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+textarea:focus,
+input:focus {
+  border-color: rgba(245, 158, 11, 0.45);
+  background: rgba(18, 18, 26, 0.58);
+}
+
+.prompt-assumptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+.prompt-assumptions span {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  padding: 0.25rem 0.62rem;
+  font-size: 0.78rem;
+  color: #d6d9e4;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.prompt-results {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.8rem;
+}
+
+.prompt-result-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.75rem;
+  padding: 0.8rem;
+  background: rgba(26, 26, 36, 0.65);
+}
+
+.prompt-target-note {
+  margin: 0.85rem 0 0;
+  color: #d3d8e4;
+}
+
 .grid-header {
   margin-top: 2.4rem;
 }
