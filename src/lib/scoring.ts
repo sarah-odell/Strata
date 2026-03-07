@@ -39,10 +39,10 @@ export const strategyWeights: Record<Strategy, FactorWeight[]> = {
   ],
   Growth: [
     { key: 'economicStrength', weight: 0.32, invert: false },
-    { key: 'regulatoryComplexity', weight: 0.16, invert: true },
-    { key: 'taxTariffFriction', weight: 0.14, invert: true },
-    { key: 'geopoliticalRisk', weight: 0.14, invert: true },
-    { key: 'dealExecutionRisk', weight: 0.1, invert: true },
+    { key: 'regulatoryComplexity', weight: 0.18, invert: true },
+    { key: 'taxTariffFriction', weight: 0.16, invert: true },
+    { key: 'geopoliticalRisk', weight: 0.18, invert: true },
+    { key: 'dealExecutionRisk', weight: 0.16, invert: true },
   ],
   'Low-Risk Entry': [
     { key: 'economicStrength', weight: 0.22, invert: false },
@@ -228,10 +228,37 @@ export const scoreCountry = (
 
   const overallScore = Math.round(sectorScore * 0.35 + weightedFactorScore * 0.65)
 
+  // Factor-level scenario stress testing
+  const scenarioShifts: Record<ScenarioCase, Partial<Record<FactorKey, number>>> = {
+    base: {},
+    bull: {
+      economicStrength: 8,
+      regulatoryComplexity: -4,
+      taxTariffFriction: -5,
+      geopoliticalRisk: -6,
+      dealExecutionRisk: -3,
+    },
+    bear: {
+      economicStrength: -10,
+      regulatoryComplexity: 6,
+      taxTariffFriction: 8,
+      geopoliticalRisk: 10,
+      dealExecutionRisk: 5,
+    },
+  }
+  const computeScenario = (sc: ScenarioCase): number => {
+    const shifts = scenarioShifts[sc]
+    const stressed = strategyWeights[strategy].reduce((acc, factor) => {
+      const raw = clamp(profile.factors[factor.key] + (shifts[factor.key] ?? 0), 0, 100)
+      const directional = factor.invert ? 100 - raw : raw
+      return acc + directional * factor.weight
+    }, 0)
+    return Math.round(sectorScore * 0.35 + stressed * 0.65)
+  }
   const scenarios = {
     base: overallScore,
-    bull: Math.min(100, overallScore + 6),
-    bear: Math.max(0, overallScore - 9),
+    bull: computeScenario('bull'),
+    bear: computeScenario('bear'),
   }
 
   const sizeAdjustment = dealSizeAdjustment(profile, dealSize)

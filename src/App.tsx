@@ -5,6 +5,7 @@ import {
   type DealSize,
   type PortfolioAdjacencyInputs,
   type PortfolioCapability,
+  type RecommendationLabel,
   rankCountries,
   strategyWeights,
   type ScenarioCase,
@@ -13,7 +14,7 @@ import {
 } from './lib/scoring'
 
 const strategies: Strategy[] = ['Buyout', 'Growth', 'Low-Risk Entry']
-type ViewMode = 'radar' | 'dealLab' | 'definitions'
+type ViewMode = 'radar' | 'dealLab' | 'research'
 type RankingView = 'cards' | 'table'
 const scenarioOptions: { label: string; value: ScenarioCase }[] = [
   { label: 'Base Case', value: 'base' },
@@ -25,11 +26,6 @@ const dealSizeOptions: { label: string; value: DealSize }[] = [
   { label: '$250M-$1B EV', value: 'mid' },
   { label: '> $1B EV', value: 'large' },
 ]
-const dealSizeRanges: Record<DealSize, string> = {
-  small: 'Under $250M enterprise value',
-  mid: '$250M to $1B enterprise value',
-  large: 'Over $1B enterprise value',
-}
 const podiumLabels = ['1st place', '2nd place', '3rd place'] as const
 const scenarioLabel: Record<ScenarioCase, string> = {
   base: 'Base Case',
@@ -51,6 +47,47 @@ type PromptAssumptions = {
   dealSize: DealSize
   targetCountryCode: string | null
 }
+
+type ResearchVerdict = {
+  persona: string
+  country: string
+  countryCode: string
+  sector: string
+  strategy: string
+  score: number
+  confidence: number
+  recommendation: RecommendationLabel
+  narrative: string
+  keyRisks: string[]
+  keyOpportunities: string[]
+  sources: { title: string; url: string; relevance: string }[]
+  dataPoints: { label: string; value: string; source: string; asOf: string }[]
+}
+
+type ResearchResult = {
+  country: string
+  countryCode: string
+  sector: string
+  strategy: string
+  prompt?: string
+  runAt: string
+  verdicts: ResearchVerdict[]
+  aggregateScore: number
+  aggregateConfidence: number
+  consensus: 'strong' | 'moderate' | 'split'
+  aggregateRecommendation: RecommendationLabel
+}
+
+const personaLabel = (id: string): string =>
+  ({
+    'macro-economist': 'Macro Economist',
+    'regulatory-analyst': 'Regulatory Analyst',
+    'deal-execution': 'Deal Execution',
+    'geopolitical-analyst': 'Geopolitical Analyst',
+    'sector-specialist': 'Sector Specialist',
+  })[id] ?? id
+
+const backendUrl = 'http://localhost:8787'
 
 const factorLabel = (key: FactorKey): string =>
   key.replace(/([A-Z])/g, ' $1').replace(/^./, (letter) => letter.toUpperCase())
@@ -161,6 +198,43 @@ const countryAliases: Record<string, string> = {
   sweden: 'SE',
   poland: 'PL',
   indonesia: 'ID',
+  switzerland: 'CH',
+  swiss: 'CH',
+  denmark: 'DK',
+  norway: 'NO',
+  finland: 'FI',
+  ireland: 'IE',
+  austria: 'AT',
+  belgium: 'BE',
+  'czech republic': 'CZ',
+  czechia: 'CZ',
+  portugal: 'PT',
+  greece: 'GR',
+  hungary: 'HU',
+  turkey: 'TR',
+  turkiye: 'TR',
+  romania: 'RO',
+  china: 'CN',
+  'hong kong': 'HK',
+  hongkong: 'HK',
+  taiwan: 'TW',
+  vietnam: 'VN',
+  thailand: 'TH',
+  philippines: 'PH',
+  malaysia: 'MY',
+  'new zealand': 'NZ',
+  israel: 'IL',
+  qatar: 'QA',
+  'south africa': 'ZA',
+  nigeria: 'NG',
+  egypt: 'EG',
+  kenya: 'KE',
+  morocco: 'MA',
+  chile: 'CL',
+  colombia: 'CO',
+  argentina: 'AR',
+  peru: 'PE',
+  'costa rica': 'CR',
 }
 
 const inferTargetCountry = (prompt: string): string | null => {
@@ -323,6 +397,16 @@ function App() {
   const [portfolioSectors, setPortfolioSectors] = useState<string[]>([])
   const [portfolioRegions, setPortfolioRegions] = useState<string[]>([])
   const [portfolioCapabilities, setPortfolioCapabilities] = useState<PortfolioCapability[]>([])
+  const [researchCountry, setResearchCountry] = useState<string>('US')
+  const [researchSector, setResearchSector] = useState<string>(supportedSectors[0])
+  const [researchStrategy, setResearchStrategy] = useState<Strategy>('Buyout')
+  const [researchPrompt, setResearchPrompt] = useState<string>('')
+  const [researchStatus, setResearchStatus] = useState<'idle' | 'running' | 'completed' | 'failed'>('idle')
+  const [researchResults, setResearchResults] = useState<ResearchResult[]>([])
+  const [selectedResearch, setSelectedResearch] = useState<ResearchResult | null>(null)
+  const [batchStatus, setBatchStatus] = useState<{ total: number; completed: number; running: boolean }>({ total: 0, completed: 0, running: false })
+  const [sortColumn, setSortColumn] = useState<string>('score')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
   const regionOptions = useMemo(
     () => Array.from(new Set(countryProfiles.map((profile) => profile.region))),
@@ -341,6 +425,36 @@ function App() {
     () => rankCountries(countryProfiles, sector, strategy, scenarioCase, dealSize, portfolioAdjacency),
     [sector, strategy, scenarioCase, dealSize, portfolioAdjacency],
   )
+  const sortedRanked = useMemo(() => {
+    const sorted = [...ranked]
+    const dir = sortDirection === 'asc' ? 1 : -1
+    sorted.sort((a, b) => {
+      switch (sortColumn) {
+        case 'country': return dir * a.name.localeCompare(b.name)
+        case 'region': return dir * a.region.localeCompare(b.region)
+        case 'score': return dir * (a.scenarioScore - b.scenarioScore)
+        case 'recommendation': return dir * (a.scenarioScore - b.scenarioScore)
+        case 'sectorFit': return dir * (a.sectorScore - b.sectorScore)
+        case 'factors': return dir * (a.weightedFactorScore - b.weightedFactorScore)
+        case 'adjacency': return dir * (a.portfolioAdjacencyAdjustment - b.portfolioAdjacencyAdjustment)
+        case 'confidence': return dir * (a.confidence - b.confidence)
+        default: return dir * (a.scenarioScore - b.scenarioScore)
+      }
+    })
+    return sorted
+  }, [ranked, sortColumn, sortDirection])
+
+  const toggleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection((d) => d === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortColumn(column)
+      setSortDirection(column === 'country' || column === 'region' ? 'asc' : 'desc')
+    }
+  }
+  const sortIndicator = (column: string) =>
+    sortColumn === column ? (sortDirection === 'asc' ? ' \u25B2' : ' \u25BC') : ''
+
   const promptAssumptions = useMemo(
     () => inferAssumptions(dealPrompt, fundSizeInput, { strategy, sector, scenarioCase, dealSize }),
     [dealPrompt, fundSizeInput, strategy, sector, scenarioCase, dealSize],
@@ -366,14 +480,13 @@ function App() {
       ? null
       : tailoredRanked.findIndex((country) => country.code === promptAssumptions.targetCountryCode) + 1
 
-  const topThree = ranked.slice(0, 3)
   const trackedCountries = ranked.length
   const radarProfile = tailoredRanked[0] ?? ranked[0]
   const radarContextLabel = `#1 tailored recommendation: ${radarProfile.name}`
   const radarMetrics = dealProfileMetrics(radarProfile)
-  const radarSize = 320
+  const radarSize = 380
   const radarCenter = radarSize / 2
-  const radarRadius = 110
+  const radarRadius = 120
   const radarLevels = [20, 40, 60, 80, 100]
   const radarPolygonPoints = radarMetrics
     .map((metric, index) => {
@@ -381,6 +494,94 @@ function App() {
       return `${point.x},${point.y}`
     })
     .join(' ')
+
+  const loadResearchResults = async () => {
+    try {
+      const response = await fetch(`${backendUrl}/api/research/results`)
+      const data = await response.json()
+      setResearchResults(data.results ?? [])
+    } catch { /* backend may not be running */ }
+  }
+
+  const triggerResearch = async () => {
+    const countryName = countryProfiles.find((c) => c.code === researchCountry)?.name ?? researchCountry
+    setResearchStatus('running')
+    try {
+      const response = await fetch(`${backendUrl}/api/research`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          countryCode: researchCountry,
+          country: countryName,
+          sector: researchSector,
+          strategy: researchStrategy,
+          prompt: researchPrompt || undefined,
+        }),
+      })
+      const { jobId } = await response.json()
+      const poll = setInterval(async () => {
+        try {
+          const jobRes = await fetch(`${backendUrl}/api/research/jobs/${jobId}`)
+          const job = await jobRes.json()
+          if (job.status !== 'running') {
+            clearInterval(poll)
+            setResearchStatus(job.status)
+            if (job.status === 'completed') loadResearchResults()
+          }
+        } catch {
+          clearInterval(poll)
+          setResearchStatus('failed')
+        }
+      }, 5000)
+    } catch {
+      setResearchStatus('failed')
+    }
+  }
+
+  const triggerBatchScan = async (marketCodes: string[]) => {
+    const markets = marketCodes.map((code) => ({
+      countryCode: code,
+      country: countryProfiles.find((c) => c.code === code)?.name ?? code,
+    }))
+    setBatchStatus({ total: markets.length, completed: 0, running: true })
+    try {
+      const response = await fetch(`${backendUrl}/api/research/batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          markets,
+          sector: researchSector,
+          strategy: researchStrategy,
+          prompt: researchPrompt || undefined,
+        }),
+      })
+      const { jobs } = await response.json()
+      const jobIds = jobs.map((j: { jobId: string }) => j.jobId)
+
+      const poll = setInterval(async () => {
+        let done = 0
+        let allDone = true
+        for (const jobId of jobIds) {
+          try {
+            const jobRes = await fetch(`${backendUrl}/api/research/jobs/${jobId}`)
+            const job = await jobRes.json()
+            if (job.status !== 'running') done++
+            else allDone = false
+          } catch {
+            done++
+          }
+        }
+        setBatchStatus((prev) => ({ ...prev, completed: done }))
+        if (allDone) {
+          clearInterval(poll)
+          setBatchStatus((prev) => ({ ...prev, running: false }))
+          loadResearchResults()
+        }
+      }, 8000)
+    } catch {
+      setBatchStatus({ total: 0, completed: 0, running: false })
+    }
+  }
 
   const applyPromptDrivenSelections = (nextPrompt: string, nextFundSizeInput: string) => {
     const inferred = inferAssumptions(nextPrompt, nextFundSizeInput, {
@@ -397,19 +598,15 @@ function App() {
 
   return (
     <main className="app-shell">
-      <div className="ambient-orb orb-top" aria-hidden="true" />
-      <div className="ambient-orb orb-right" aria-hidden="true" />
-
       <header className="hero">
-        <p className="eyebrow">Strata Intelligence</p>
-        <h1>PE Expansion Radar</h1>
-        <p>
-          Decision support for PE and corporate development teams evaluating country expansion
-          exposure across macro, regulatory, tax, and geopolitical dimensions.
-        </p>
+        <div className="hero-identity">
+          <p className="eyebrow">Strata</p>
+          <h1>PE Expansion Radar</h1>
+        </div>
+        <p className="hero-meta">{countryProfiles.length} markets · {countryProfiles[0]?.lastUpdated}</p>
       </header>
 
-      <section className="view-switch">
+      <nav className="view-switch">
         <button
           type="button"
           className={viewMode === 'radar' ? 'view-btn active' : 'view-btn'}
@@ -426,16 +623,16 @@ function App() {
         </button>
         <button
           type="button"
-          className={viewMode === 'definitions' ? 'view-btn active' : 'view-btn'}
-          onClick={() => setViewMode('definitions')}
+          className={viewMode === 'research' ? 'view-btn active' : 'view-btn'}
+          onClick={() => { setViewMode('research'); loadResearchResults() }}
         >
-          Industry Definitions
+          Research
         </button>
-      </section>
+      </nav>
 
       {viewMode === 'radar' ? (
         <>
-          <section className="controls">
+          <section className="toolbar">
             <label>
               Deal strategy
               <select value={strategy} onChange={(event) => setStrategy(event.target.value as Strategy)}>
@@ -457,47 +654,40 @@ function App() {
                 ))}
               </select>
             </label>
-          </section>
 
-          <section className="scenario-toggle">
-            {scenarioOptions.map((scenario) => (
-              <button
-                key={scenario.value}
-                type="button"
-                className={scenarioCase === scenario.value ? 'scenario-btn active' : 'scenario-btn'}
-                onClick={() => setScenarioCase(scenario.value)}
-              >
-                {scenario.label}
-              </button>
-            ))}
-          </section>
+            <div className="toolbar-toggles">
+              {scenarioOptions.map((scenario) => (
+                <button
+                  key={scenario.value}
+                  type="button"
+                  className={scenarioCase === scenario.value ? 'scenario-btn active' : 'scenario-btn'}
+                  onClick={() => setScenarioCase(scenario.value)}
+                >
+                  {scenario.label}
+                </button>
+              ))}
 
-          <section className="scenario-toggle">
-            {dealSizeOptions.map((sizeOption) => (
-              <button
-                key={sizeOption.value}
-                type="button"
-                className={dealSize === sizeOption.value ? 'scenario-btn active' : 'scenario-btn'}
-                onClick={() => setDealSize(sizeOption.value)}
-              >
-                {sizeOption.label}
-              </button>
-            ))}
+              <span className="toolbar-divider" />
+
+              {dealSizeOptions.map((sizeOption) => (
+                <button
+                  key={sizeOption.value}
+                  type="button"
+                  className={dealSize === sizeOption.value ? 'scenario-btn active' : 'scenario-btn'}
+                  onClick={() => setDealSize(sizeOption.value)}
+                >
+                  {sizeOption.label}
+                </button>
+              ))}
+            </div>
           </section>
-          <p className="deal-size-note">
-            Deal size bands are based on target enterprise value.
-          </p>
 
           <section className="grid-header">
             <div className="grid-header-top">
               <div>
-                <h3>Country ranking ({trackedCountries} markets)</h3>
+                <h3>Country Ranking</h3>
                 <p>
-                  Overall score = 35% sector fit + 65% weighted risk-adjusted country factors for{' '}
-                  <strong>{strategy}</strong> ·{' '}
-                  <strong>{scenarioOptions.find((s) => s.value === scenarioCase)?.label}</strong> ·{' '}
-                  <strong>{dealSizeOptions.find((d) => d.value === dealSize)?.label}</strong> + portfolio
-                  adjacency overlay
+                  {trackedCountries} markets · {strategy} · {scenarioOptions.find((s) => s.value === scenarioCase)?.label} · {dealSizeOptions.find((d) => d.value === dealSize)?.label}
                 </p>
               </div>
               <div className="ranking-view-toggle">
@@ -517,32 +707,6 @@ function App() {
                 </button>
               </div>
             </div>
-          </section>
-
-          <section className="weights-panel">
-            <p className="weights-title">Current factor weights ({strategy})</p>
-            <div className="weights-grid">
-              {strategyWeights[strategy].map((factor) => (
-                <div key={`weight-${factor.key}`} className="weight-chip">
-                  <p>{factorLabel(factor.key)}</p>
-                  <span>{Math.round(factor.weight * 100)}% · {factor.invert ? 'Lower is better' : 'Higher is better'}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="top-three-grid">
-            {topThree.map((profile, index) => (
-              <article key={`top-${profile.code}`} className="top-market-card">
-                <p className="top-rank">{podiumLabels[index] ?? `${index + 1}th place`}</p>
-                <h4>{profile.name}</h4>
-                <p className="region">{profile.region}</p>
-                <p className="top-score">Score {profile.scenarioScore}</p>
-                <p className={badgeClass(profile.scenarioRecommendation)}>
-                  {profile.scenarioRecommendation}
-                </p>
-              </article>
-            ))}
           </section>
 
           {rankingView === 'cards' ? (
@@ -645,20 +809,20 @@ function App() {
               <table className="country-table">
                 <thead>
                   <tr>
-                    <th>Rank</th>
-                    <th>Country</th>
-                    <th>Region</th>
-                    <th>Score</th>
-                    <th>Recommendation</th>
-                    <th>Sector Fit</th>
-                    <th>Country Factors</th>
-                    <th>Adjacency</th>
-                    <th>Confidence</th>
+                    <th>#</th>
+                    <th className="sortable-th" onClick={() => toggleSort('country')}>Country{sortIndicator('country')}</th>
+                    <th className="sortable-th" onClick={() => toggleSort('region')}>Region{sortIndicator('region')}</th>
+                    <th className="sortable-th" onClick={() => toggleSort('score')}>Score{sortIndicator('score')}</th>
+                    <th className="sortable-th" onClick={() => toggleSort('recommendation')}>Rec.{sortIndicator('recommendation')}</th>
+                    <th className="sortable-th" onClick={() => toggleSort('sectorFit')}>Sector Fit{sortIndicator('sectorFit')}</th>
+                    <th className="sortable-th" onClick={() => toggleSort('factors')}>Factors{sortIndicator('factors')}</th>
+                    <th className="sortable-th" onClick={() => toggleSort('adjacency')}>Adj.{sortIndicator('adjacency')}</th>
+                    <th className="sortable-th" onClick={() => toggleSort('confidence')}>Conf.{sortIndicator('confidence')}</th>
                     <th>Updated</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {ranked.map((profile, index) => (
+                  {sortedRanked.map((profile, index) => (
                     <tr key={`table-${profile.code}`}>
                       <td>#{index + 1}</td>
                       <td>
@@ -666,7 +830,11 @@ function App() {
                         <span className="table-country-code">{profile.code}</span>
                       </td>
                       <td>{profile.region}</td>
-                      <td>{profile.scenarioScore}</td>
+                      <td>
+                        <span className="score-cell" style={{ '--w': `${profile.scenarioScore}%` } as React.CSSProperties}>
+                          {profile.scenarioScore}
+                        </span>
+                      </td>
                       <td>
                         <span className={badgeClass(profile.scenarioRecommendation)}>
                           {profile.scenarioRecommendation}
@@ -683,6 +851,18 @@ function App() {
               </table>
             </section>
           )}
+
+          <section className="weights-panel">
+            <p className="weights-title">Factor Weights — {strategy}</p>
+            <div className="weights-grid">
+              {strategyWeights[strategy].map((factor) => (
+                <div key={`weight-${factor.key}`} className="weight-chip">
+                  <p>{factorLabel(factor.key)}</p>
+                  <span>{Math.round(factor.weight * 100)}% · {factor.invert ? 'Lower is better' : 'Higher is better'}</span>
+                </div>
+              ))}
+            </div>
+          </section>
         </>
       ) : viewMode === 'dealLab' ? (
         <>
@@ -780,7 +960,7 @@ function App() {
                 <article key={`tailored-${profile.code}`} className="prompt-result-card">
                   <p className="top-rank">{podiumLabels[index]}</p>
                   <h4>{profile.name}</h4>
-                  <p className="top-score">Score {profile.scenarioScore}</p>
+                  <p className="top-score">{profile.scenarioScore}</p>
                   <p className={badgeClass(profile.scenarioRecommendation)}>{profile.scenarioRecommendation}</p>
                   <p className="summary">
                     Why: strong {topStrengths(profile, promptAssumptions.strategy).join(' + ')} under{' '}
@@ -835,33 +1015,61 @@ function App() {
                       key={`ring-${level}`}
                       points={ringPoints}
                       fill="none"
-                      stroke="rgba(255,255,255,0.12)"
+                      stroke="rgba(255,255,255,0.08)"
                       strokeWidth="1"
                     />
                   )
                 })}
 
-                {radarMetrics.map((_, index) => {
+                {radarMetrics.map((metric, index) => {
                   const end = radarPoint(index, radarMetrics.length, 100, radarCenter, radarCenter, radarRadius)
+                  const labelPos = radarPoint(index, radarMetrics.length, 100, radarCenter, radarCenter, radarRadius + 24)
+                  const angle = -Math.PI / 2 + (index / radarMetrics.length) * Math.PI * 2
+                  const textAnchor = Math.abs(Math.cos(angle)) < 0.15 ? 'middle' : Math.cos(angle) > 0 ? 'start' : 'end'
                   return (
-                    <line
-                      key={`axis-${index}`}
-                      x1={radarCenter}
-                      y1={radarCenter}
-                      x2={end.x}
-                      y2={end.y}
-                      stroke="rgba(255,255,255,0.18)"
-                      strokeWidth="1"
-                    />
+                    <g key={`axis-${index}`}>
+                      <line
+                        x1={radarCenter}
+                        y1={radarCenter}
+                        x2={end.x}
+                        y2={end.y}
+                        stroke="rgba(255,255,255,0.08)"
+                        strokeWidth="1"
+                      />
+                      <text
+                        x={labelPos.x}
+                        y={labelPos.y}
+                        textAnchor={textAnchor}
+                        dominantBaseline="middle"
+                        fill="rgba(255,255,255,0.5)"
+                        fontSize="10"
+                        fontFamily="Inter, system-ui, sans-serif"
+                      >
+                        {metric.label}
+                      </text>
+                    </g>
                   )
                 })}
 
                 <polygon
                   points={radarPolygonPoints}
-                  fill="rgba(245, 158, 11, 0.22)"
-                  stroke="rgba(245, 158, 11, 0.9)"
-                  strokeWidth="2"
+                  fill="rgba(196, 153, 60, 0.2)"
+                  stroke="rgba(196, 153, 60, 0.85)"
+                  strokeWidth="1.5"
                 />
+
+                {radarMetrics.map((metric, index) => {
+                  const pt = radarPoint(index, radarMetrics.length, metric.value, radarCenter, radarCenter, radarRadius)
+                  return (
+                    <circle
+                      key={`dot-${index}`}
+                      cx={pt.x}
+                      cy={pt.y}
+                      r="3"
+                      fill="rgba(196, 153, 60, 0.9)"
+                    />
+                  )
+                })}
               </svg>
 
               <div className="radar-legend">
@@ -878,241 +1086,247 @@ function App() {
             </div>
           </section>
         </>
-      ) : (
-        <section className="definitions-panel">
-          <h3>Industry Definitions</h3>
-          <p>
-            These definitions standardize how sectors are used in screening and memo generation.
-          </p>
+      ) : viewMode === 'research' ? (
+        <>
+          <section className="research-hero">
+            <div className="research-hero-text">
+              <h2>AI Research Ensemble</h2>
+              <p>
+                Deploy 5 specialist AI analysts — macro-economist, regulatory analyst, deal execution specialist,
+                geopolitical risk analyst, and sector specialist — to independently research any market.
+                Each agent searches live data sources, synthesizes findings, and scores the opportunity.
+                Results are aggregated into a consensus view with full source citations.
+              </p>
+            </div>
+            <div className="research-hero-agents">
+              <span className="agent-pip">Macro</span>
+              <span className="agent-pip">Regulatory</span>
+              <span className="agent-pip">Deal Exec</span>
+              <span className="agent-pip">Geopolitical</span>
+              <span className="agent-pip">Sector</span>
+            </div>
+          </section>
 
-          <article className="definition-card">
-            <h4>Deal Strategy Definitions</h4>
-            <p>
-              <strong>Buyout:</strong> Control-oriented acquisitions focused on operational improvement
-              and multiple pathways to value creation.
-            </p>
-            <p>
-              <strong>Growth:</strong> Expansion capital or minority-led strategies prioritizing
-              revenue scaling, market share capture, and capability buildout.
-            </p>
-            <p>
-              <strong>Low-Risk Entry:</strong> Capital deployment emphasizing downside protection,
-              stable policy environments, and lower execution volatility.
-            </p>
-          </article>
+          <section className="research-trigger-panel">
+            <p className="weights-title">New Research</p>
+            <p className="prompt-subtitle">Describe your deal thesis, research question, or investment focus. The AI analysts will use this as context for their research.</p>
+            <label>
+              Research prompt
+              <textarea
+                className="research-prompt-input"
+                value={researchPrompt}
+                onChange={(e) => setResearchPrompt(e.target.value)}
+                placeholder="e.g. We're a $3B buyout fund evaluating industrial automation platforms in Germany. Key concerns: post-acquisition integration complexity, works council dynamics, and whether the Mittelstand succession pipeline is real or overhyped. We need current data on deal flow, leverage availability, and exit multiples for mid-market industrial tech."
+              />
+            </label>
+            <div className="research-trigger-grid">
+              <label>
+                Market
+                <select value={researchCountry} onChange={(e) => setResearchCountry(e.target.value)}>
+                  {countryProfiles.map((c) => (
+                    <option key={c.code} value={c.code}>{c.name} ({c.code})</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Sector
+                <select value={researchSector} onChange={(e) => setResearchSector(e.target.value)}>
+                  {supportedSectors.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Strategy
+                <select value={researchStrategy} onChange={(e) => setResearchStrategy(e.target.value as Strategy)}>
+                  {strategies.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </label>
+              <div className="research-trigger-action">
+                <button
+                  type="button"
+                  className="research-run-btn"
+                  onClick={triggerResearch}
+                  disabled={researchStatus === 'running'}
+                >
+                  {researchStatus === 'running' ? 'Agents working...' : 'Deploy Research Ensemble'}
+                </button>
+              </div>
+            </div>
+            {researchStatus === 'running' && (
+              <div className="research-progress">
+                <div className="research-progress-bar" />
+                <p className="research-status-text">5 AI analyst agents researching in parallel — this typically takes 2-4 minutes...</p>
+              </div>
+            )}
+            {researchStatus === 'failed' && (
+              <p className="research-status-text research-error">Research failed. Ensure the backend server is running on port 8787.</p>
+            )}
+            {researchStatus === 'completed' && !selectedResearch && (
+              <p className="research-status-text research-success">Research complete. Select a result below to view the full report.</p>
+            )}
+            <div className="research-batch-section">
+              <p className="batch-label">Or scan multiple markets at once:</p>
+              <div className="batch-actions">
+                <button
+                  type="button"
+                  className="scenario-btn"
+                  disabled={batchStatus.running}
+                  onClick={() => triggerBatchScan(ranked.slice(0, 5).map((c) => c.code))}
+                >
+                  Top 5 Markets
+                </button>
+                <button
+                  type="button"
+                  className="scenario-btn"
+                  disabled={batchStatus.running}
+                  onClick={() => triggerBatchScan(ranked.slice(0, 10).map((c) => c.code))}
+                >
+                  Top 10 Markets
+                </button>
+                <button
+                  type="button"
+                  className="scenario-btn"
+                  disabled={batchStatus.running}
+                  onClick={() => triggerBatchScan(countryProfiles.map((c) => c.code))}
+                >
+                  All {countryProfiles.length} Markets
+                </button>
+              </div>
+              {batchStatus.running && (
+                <div className="research-progress">
+                  <div className="research-progress-bar" />
+                  <p className="research-status-text">
+                    Batch scan: {batchStatus.completed}/{batchStatus.total} markets complete...
+                  </p>
+                </div>
+              )}
+            </div>
+          </section>
 
-          <article className="definition-card">
-            <h4>Scenario Case Definitions</h4>
-            <p>
-              <strong>Base Case:</strong> Most likely operating environment under current macro and
-              policy assumptions.
-            </p>
-            <p>
-              <strong>Bull Case:</strong> Upside environment where demand, execution, and policy
-              conditions are more favorable than baseline.
-            </p>
-            <p>
-              <strong>Bear Case:</strong> Downside environment with weaker growth, higher friction,
-              or elevated geopolitical/regulatory pressure.
-            </p>
-          </article>
+          {selectedResearch ? (
+            <>
+              <section className="research-aggregate-panel">
+                <button type="button" className="detail-toggle" onClick={() => setSelectedResearch(null)}>
+                  ← All results
+                </button>
+                <div className="research-aggregate-header">
+                  <div>
+                    <p className="eyebrow">Ensemble Research Report</p>
+                    <h3>{selectedResearch.country} · {selectedResearch.sector}</h3>
+                    <p className="prompt-subtitle">
+                      {selectedResearch.strategy} · {new Date(selectedResearch.runAt).toLocaleDateString()} · {selectedResearch.verdicts.length} analysts
+                    </p>
+                    {selectedResearch.prompt && (
+                      <p className="research-prompt-display">"{selectedResearch.prompt}"</p>
+                    )}
+                  </div>
+                  <div className="score-stack">
+                    <p className="score">{selectedResearch.aggregateScore}</p>
+                    <p className={badgeClass(selectedResearch.aggregateRecommendation)}>
+                      {selectedResearch.aggregateRecommendation}
+                    </p>
+                    <p className={`research-consensus consensus-${selectedResearch.consensus}`}>
+                      {selectedResearch.consensus} consensus
+                    </p>
+                    <p className="meta">Confidence {Math.round(selectedResearch.aggregateConfidence * 100)}%</p>
+                  </div>
+                </div>
+              </section>
 
-          <article className="definition-card">
-            <h4>Deal Size Definitions</h4>
-            <p>
-              <strong>Small Deal:</strong> {dealSizeRanges.small}
-            </p>
-            <p>
-              <strong>Mid Deal:</strong> {dealSizeRanges.mid}
-            </p>
-            <p>
-              <strong>Large Deal:</strong> {dealSizeRanges.large}
-            </p>
-          </article>
+              <section className="research-verdicts-grid">
+                {selectedResearch.verdicts.map((v) => (
+                  <article key={v.persona} className="country-card verdict-card">
+                    <div className="top-row">
+                      <div>
+                        <p className="country-code">{personaLabel(v.persona)}</p>
+                      </div>
+                      <div className="score-stack">
+                        <p className="score">{v.score}</p>
+                        <p className={badgeClass(v.recommendation)}>{v.recommendation}</p>
+                        <p className="meta">{Math.round(v.confidence * 100)}% confidence</p>
+                      </div>
+                    </div>
 
-          <article className="definition-card">
-            <h4>Professional Services</h4>
-            <p>
-              B2B service-led businesses that primarily generate revenue through recurring contracts,
-              advisory, outsourced workflows, or managed delivery.
-            </p>
-            <p>
-              Includes: BPO, compliance/risk services, tech-enabled advisory, managed IT services,
-              data and analytics services.
-            </p>
-            <p>
-              Excludes: consumer services and pure software license businesses without service-led
-              delivery.
-            </p>
-          </article>
+                    <p className="summary">{v.narrative}</p>
 
-          <article className="definition-card">
-            <h4>Healthcare Services</h4>
-            <p>
-              Service providers operating in care delivery, diagnostics, care enablement, and
-              healthcare operations support.
-            </p>
-            <p>
-              Includes: provider platforms, diagnostics/labs, care management, revenue cycle and
-              payer-support services.
-            </p>
-            <p>
-              Excludes: pure biotech/pharma R&amp;D and medical device manufacturing.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Industrial Technology</h4>
-            <p>
-              Industrial and infrastructure-adjacent technology businesses with hardware, software,
-              and automation capabilities embedded in operations.
-            </p>
-            <p>
-              Includes: automation systems, industrial software, advanced manufacturing technology,
-              and process optimization solutions.
-            </p>
-            <p>
-              Excludes: low-tech commoditized manufacturing without differentiated technology IP.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Aerospace &amp; Defense</h4>
-            <p>
-              Defense, aerospace, and dual-use technology businesses serving government and
-              mission-critical commercial programs.
-            </p>
-            <p>
-              Includes: defense electronics, aerospace systems, secure communications, MRO,
-              simulation/training, and certified mission software.
-            </p>
-            <p>
-              Excludes: non-compliant suppliers without required certifications, export-control
-              readiness, or government contracting capability.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Software &amp; Data Services</h4>
-            <p>
-              Software-led and data-intensive businesses delivering mission-critical workflows,
-              analytics, and recurring subscription or usage-based products.
-            </p>
-            <p>
-              Includes: vertical SaaS, workflow software, data infrastructure, applied AI tooling,
-              and enterprise information services.
-            </p>
-            <p>
-              Excludes: ad-dependent consumer apps and non-differentiated IT resale businesses.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Financial Services</h4>
-            <p>
-              Regulated and adjacent financial platforms delivering payments, lending, insurance,
-              wealth, and capital markets enablement.
-            </p>
-            <p>
-              Includes: specialty finance, payments infrastructure, wealth operations, reg-tech,
-              and risk/compliance platforms.
-            </p>
-            <p>
-              Excludes: highly speculative trading-led models without durable operating earnings.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Energy &amp; Infrastructure</h4>
-            <p>
-              Businesses that build, operate, or service critical energy, utilities, transport, and
-              core infrastructure systems.
-            </p>
-            <p>
-              Includes: grid and transmission services, distributed energy, utility services,
-              environmental infrastructure, and operations technology.
-            </p>
-            <p>
-              Excludes: pure commodity exposure without defensible operating capabilities.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Consumer &amp; Retail</h4>
-            <p>
-              Consumer-facing brands and retail platforms with repeat demand, pricing discipline,
-              and scalable multichannel distribution.
-            </p>
-            <p>
-              Includes: specialty retail, consumer health/wellness, digitally enabled commerce, and
-              franchise-like service chains.
-            </p>
-            <p>
-              Excludes: trend-dependent low-moat products with weak retention or margin durability.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Logistics &amp; Transportation</h4>
-            <p>
-              Businesses enabling goods movement, distribution, and supply chain reliability across
-              domestic and cross-border networks.
-            </p>
-            <p>
-              Includes: contract logistics, freight forwarding, transport software, warehouse
-              automation, and last-mile optimization.
-            </p>
-            <p>
-              Excludes: pure commodity shipping exposure without differentiated service capabilities.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Education &amp; Training</h4>
-            <p>
-              Platforms and service providers delivering workforce, professional, and institutional
-              learning outcomes with recurring demand.
-            </p>
-            <p>
-              Includes: vocational training, corporate learning platforms, assessment systems, and
-              compliance training solutions.
-            </p>
-            <p>
-              Excludes: unaccredited, low-completion models without measurable learner outcomes.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Real Estate &amp; Built Environment</h4>
-            <p>
-              Businesses tied to property operations, facility performance, and built-environment
-              modernization.
-            </p>
-            <p>
-              Includes: property technology, facility services, construction-adjacent services, and
-              asset operations platforms.
-            </p>
-            <p>
-              Excludes: pure land speculation and highly cyclical assets without operating leverage.
-            </p>
-          </article>
-
-          <article className="definition-card">
-            <h4>Food &amp; Agriculture</h4>
-            <p>
-              Businesses in food value chains and agricultural systems with defensible processing,
-              distribution, and compliance capabilities.
-            </p>
-            <p>
-              Includes: food processing, agri-services, specialty inputs, cold-chain infrastructure,
-              and traceability software.
-            </p>
-            <p>
-              Excludes: undifferentiated commodity exposure lacking value-added operations.
-            </p>
-          </article>
-        </section>
-      )}
+                    {v.keyRisks.length > 0 && (
+                      <div className="verdict-section">
+                        <p className="detail-title">Key Risks</p>
+                        <ul>{v.keyRisks.map((r, i) => <li key={i}>{r}</li>)}</ul>
+                      </div>
+                    )}
+                    {v.keyOpportunities.length > 0 && (
+                      <div className="verdict-section">
+                        <p className="detail-title">Key Opportunities</p>
+                        <ul>{v.keyOpportunities.map((o, i) => <li key={i}>{o}</li>)}</ul>
+                      </div>
+                    )}
+                    {v.dataPoints.length > 0 && (
+                      <div className="verdict-section">
+                        <p className="detail-title">Data Points</p>
+                        <div className="data-points-grid">
+                          {v.dataPoints.map((d, i) => (
+                            <div key={i} className="weight-chip">
+                              <p>{d.label}</p>
+                              <span>{d.value} · {d.source} · {d.asOf}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {v.sources.length > 0 && (
+                      <div className="verdict-section">
+                        <p className="detail-title">Sources ({v.sources.length})</p>
+                        <ul>
+                          {v.sources.map((s, i) => (
+                            <li key={i}>
+                              <a href={s.url} target="_blank" rel="noreferrer">{s.title}</a>
+                              <span className="factor-quality">{s.relevance}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </article>
+                ))}
+              </section>
+            </>
+          ) : (
+            <>
+              <section className="grid-header research-results-header">
+                <h3>Research Results</h3>
+                <p>Completed ensemble analyses from AI research agents.</p>
+              </section>
+              {researchResults.length === 0 ? (
+                <p className="prompt-subtitle research-empty-state">
+                  No research results yet. Run your first analysis above.
+                </p>
+              ) : (
+                <section className="prompt-results research-results-list">
+                  {researchResults.map((r, i) => (
+                    <article
+                      key={i}
+                      className="prompt-result-card research-result-item"
+                      onClick={() => setSelectedResearch(r)}
+                    >
+                      <p className="top-rank">{r.countryCode}</p>
+                      <h4>{r.country}</h4>
+                      <p className="region">{r.sector} · {r.strategy}</p>
+                      <p className="top-score">{r.aggregateScore}</p>
+                      <p className={badgeClass(r.aggregateRecommendation)}>{r.aggregateRecommendation}</p>
+                      <p className={`research-consensus consensus-${r.consensus}`}>{r.consensus} consensus</p>
+                      <p className="meta">{new Date(r.runAt).toLocaleDateString()}</p>
+                    </article>
+                  ))}
+                </section>
+              )}
+            </>
+          )}
+        </>
+      ) : null}
     </main>
   )
 }
