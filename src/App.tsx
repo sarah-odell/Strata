@@ -452,7 +452,7 @@ const loadDealLabExports = (): DealLabExportEntry[] => {
 }
 
 function App() {
-  const [viewMode, setViewMode] = useState<ViewMode>('radar')
+  const [viewMode, setViewMode] = useState<ViewMode>('dealLab')
   const [rankingView, setRankingView] = useState<RankingView>('table')
   const [sector, setSector] = useState<string>(supportedSectors[0])
   const [strategy, setStrategy] = useState<Strategy>('Buyout')
@@ -810,17 +810,17 @@ function App() {
       <nav className="view-switch">
         <button
           type="button"
-          className={viewMode === 'radar' ? 'view-btn active' : 'view-btn'}
-          onClick={() => setViewMode('radar')}
-        >
-          Radar
-        </button>
-        <button
-          type="button"
           className={viewMode === 'dealLab' ? 'view-btn active' : 'view-btn'}
           onClick={() => setViewMode('dealLab')}
         >
           Deal Lab
+        </button>
+        <button
+          type="button"
+          className={viewMode === 'radar' ? 'view-btn active' : 'view-btn'}
+          onClick={() => setViewMode('radar')}
+        >
+          Radar
         </button>
         <button
           type="button"
