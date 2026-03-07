@@ -7,7 +7,7 @@ import {
   type PortfolioCapability,
   type RecommendationLabel,
   rankCountries,
-  strategyWeights,
+  getEffectiveFactorWeights,
   type ScenarioCase,
   type ScoredCountry,
   type Strategy,
@@ -366,8 +366,8 @@ const inferAssumptions = (
   }
 }
 
-const topStrengths = (profile: ScoredCountry, strategy: Strategy): string[] => {
-  return strategyWeights[strategy]
+const topStrengths = (profile: ScoredCountry, strategy: Strategy, dealSize: DealSize): string[] => {
+  return getEffectiveFactorWeights(strategy, dealSize)
     .map((factor) => {
       const raw = profile.factors[factor.key]
       const directional = factor.invert ? 100 - raw : raw
@@ -577,6 +577,10 @@ function App() {
 
   const trackedCountries = ranked.length
   const radarProfiles = (tailoredTopThree.length > 0 ? tailoredTopThree : ranked.slice(0, 3)).slice(0, 3)
+  const activeWeights = useMemo(
+    () => getEffectiveFactorWeights(strategy, dealSize),
+    [strategy, dealSize],
+  )
   const radarSize = 380
   const radarCenter = radarSize / 2
   const radarRadius = 120
@@ -742,7 +746,7 @@ function App() {
     const generatedAt = new Date().toISOString()
     const topThreeLines = tailoredTopThree
       .map((profile, index) => {
-        const strengths = topStrengths(profile, promptAssumptions.strategy).join(' + ')
+        const strengths = topStrengths(profile, promptAssumptions.strategy, promptAssumptions.dealSize).join(' + ')
         return `${index + 1}. ${profile.name} (${profile.code}) — Score ${profile.scenarioScore} · ${profile.scenarioRecommendation}\n   - Why: ${strengths}\n   - Region: ${profile.region}`
       })
       .join('\n')
@@ -945,7 +949,7 @@ function App() {
                     </div>
 
                     <ul>
-                      {strategyWeights[strategy].map((factor) => {
+                      {activeWeights.map((factor) => {
                         const raw = profile.factors[factor.key]
                         const directional = factor.invert ? 100 - raw : raw
                         const quality = profile.factorDataQuality[factor.key]
@@ -1030,7 +1034,7 @@ function App() {
                   </div>
                   <p className="summary">{selectedTableProfile.notes}</p>
                   <p className="meta">
-                    Strongest modeled factors: {topStrengths(selectedTableProfile, strategy).join(' + ')}
+                    Strongest modeled factors: {topStrengths(selectedTableProfile, strategy, dealSize).join(' + ')}
                   </p>
                 </div>
               ) : null}
@@ -1097,9 +1101,9 @@ function App() {
           )}
 
           <section className="weights-panel">
-            <p className="weights-title">Factor Weights — {strategy}</p>
+            <p className="weights-title">Factor Weights — {strategy} · {dealSizeOptions.find((option) => option.value === dealSize)?.label}</p>
             <div className="weights-grid">
-              {strategyWeights[strategy].map((factor) => (
+              {activeWeights.map((factor) => (
                 <div key={`weight-${factor.key}`} className="weight-chip">
                   <p>{factorLabel(factor.key)}</p>
                   <span>{Math.round(factor.weight * 100)}% · {factor.invert ? 'Lower is better' : 'Higher is better'}</span>
@@ -1207,7 +1211,7 @@ function App() {
                   <p className="top-score">{profile.scenarioScore}</p>
                   <p className={badgeClass(profile.scenarioRecommendation)}>{profile.scenarioRecommendation}</p>
                   <p className="summary">
-                    Why: strong {topStrengths(profile, promptAssumptions.strategy).join(' + ')} under{' '}
+                    Why: strong {topStrengths(profile, promptAssumptions.strategy, promptAssumptions.dealSize).join(' + ')} under{' '}
                     {promptAssumptions.strategy.toLowerCase()} weighting.
                   </p>
                 </article>

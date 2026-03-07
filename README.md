@@ -78,6 +78,7 @@ Deal size bands:
 Overall score:
 - `35%` sector fit
 - `65%` weighted country factors
+- Factor weights are dynamically rebalanced by deal size (`$25M-$250M`, `$250M-$1B`, `$1B+`) so small, mid, and large funds receive size-appropriate rankings.
 
 Factors:
 - Attractiveness:
