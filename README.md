@@ -46,6 +46,11 @@ Strategies:
 - `Growth`
 - `Low-Risk Entry`
 
+Deal size bands:
+- `Small Deal`: Under $250 million enterprise value
+- `Mid Deal`: $250 million to $1 billion enterprise value
+- `Large Deal`: Over $1 billion enterprise value
+
 ## Scoring model
 Overall score:
 - `35%` sector fit

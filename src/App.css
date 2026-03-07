@@ -160,6 +160,12 @@
   box-shadow: 0 0 16px rgba(245, 158, 11, 0.2);
 }
 
+.deal-size-note {
+  margin: 0.45rem 0 0;
+  color: #949bad;
+  font-size: 0.82rem;
+}
+
 label {
   display: grid;
   gap: 0.45rem;

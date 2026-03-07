@@ -22,6 +22,11 @@ const dealSizeOptions: { label: string; value: DealSize }[] = [
   { label: 'Mid Deal', value: 'mid' },
   { label: 'Large Deal', value: 'large' },
 ]
+const dealSizeRanges: Record<DealSize, string> = {
+  small: 'Under $250M enterprise value',
+  mid: '$250M to $1B enterprise value',
+  large: 'Over $1B enterprise value',
+}
 const podiumLabels = ['1st place', '2nd place', '3rd place'] as const
 
 const factorLabel = (key: FactorKey): string =>
@@ -149,6 +154,10 @@ function App() {
               </button>
             ))}
           </section>
+          <p className="deal-size-note">
+            Deal size bands: Small = {dealSizeRanges.small}; Mid = {dealSizeRanges.mid}; Large ={' '}
+            {dealSizeRanges.large}.
+          </p>
 
           <section className="grid-header">
             <h3>Country ranking ({trackedCountries} markets)</h3>
@@ -299,6 +308,19 @@ function App() {
             <p>
               <strong>Low-Risk Entry:</strong> Capital deployment emphasizing downside protection,
               stable policy environments, and lower execution volatility.
+            </p>
+          </article>
+
+          <article className="definition-card">
+            <h4>Deal Size Definitions</h4>
+            <p>
+              <strong>Small Deal:</strong> {dealSizeRanges.small}
+            </p>
+            <p>
+              <strong>Mid Deal:</strong> {dealSizeRanges.mid}
+            </p>
+            <p>
+              <strong>Large Deal:</strong> {dealSizeRanges.large}
             </p>
           </article>
 
