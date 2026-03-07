@@ -124,6 +124,10 @@
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
   margin-top: 1.1rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 0.75rem;
+  background: rgba(18, 18, 26, 0.3);
 }
 
 label {
@@ -138,20 +142,21 @@ select {
   width: 100%;
   height: 2.75rem;
   border-radius: 0.75rem;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 0 0.75rem;
   font-size: 0.95rem;
-  background: rgba(26, 26, 36, 0.65);
+  background: rgba(18, 18, 26, 0.45);
   color: var(--foreground);
   transition: all 200ms ease-out;
 }
 
 select:hover {
-  border-color: var(--border-hover);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 select:focus {
-  border-color: rgba(245, 158, 11, 0.5);
+  border-color: rgba(245, 158, 11, 0.45);
+  background: rgba(18, 18, 26, 0.58);
 }
 
 .grid-header {
