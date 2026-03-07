@@ -786,7 +786,6 @@ li:first-child {
 .country-table td:nth-child(9) {
   font-family: 'JetBrains Mono', monospace;
   font-variant-numeric: tabular-nums;
-  text-align: right;
   color: var(--text-primary);
 }
 
@@ -796,7 +795,24 @@ li:first-child {
 .country-table th:nth-child(7),
 .country-table th:nth-child(8),
 .country-table th:nth-child(9) {
+  text-align: center;
+}
+
+.country-table td:nth-child(1),
+.country-table td:nth-child(4) {
   text-align: right;
+}
+
+.country-table th:nth-child(1),
+.country-table th:nth-child(4) {
+  text-align: right;
+}
+
+.country-table td:nth-child(6),
+.country-table td:nth-child(7),
+.country-table td:nth-child(8),
+.country-table td:nth-child(9) {
+  text-align: center;
 }
 
 .country-table tbody tr:nth-child(even) {
