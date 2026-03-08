@@ -598,9 +598,10 @@ function App() {
     () => getEffectiveFactorWeights(strategy, dealSize, sector),
     [strategy, dealSize, sector],
   )
-  const radarSize = 380
+  const radarSize = 460
   const radarCenter = radarSize / 2
   const radarRadius = 120
+  const radarLabelRadius = radarRadius + 28
   const radarLevels = [20, 40, 60, 80, 100]
 
   const loadResearchResults = async () => {
@@ -1444,7 +1445,7 @@ function App() {
                           100,
                           radarCenter,
                           radarCenter,
-                          radarRadius + 24,
+                          radarLabelRadius,
                         )
                         const angle = -Math.PI / 2 + (metricIndex / radarMetrics.length) * Math.PI * 2
                         const textAnchor =
