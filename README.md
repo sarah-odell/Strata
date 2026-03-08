@@ -2,52 +2,30 @@
 
 Live frontend: [https://sarah-odell.github.io/Strata/](https://sarah-odell.github.io/Strata/)
 
-Strata is a private equity and corporate development market-screening application for evaluating expansion markets by attractiveness, feasibility, and execution risk.
+Strata is a private equity and corporate development market-screening application for evaluating expansion markets by attractiveness, feasibility, and execution risk. It combines quantitative country scoring with an AI-powered multi-agent research pipeline to produce investment-grade market assessments.
 
 ## Product Surfaces
-- `Radar`: country ranking table/cards, selected-market detail, weighted factors, confidence, freshness, trend direction, and scenario sensitivity.
-- `Deal Lab`: prompt-driven recommendation logic, fund-size aware assumptions, strategy/sector/deal-size toggles, and memo export.
-- `Deal Profile Radar`: top-3 recommendation profile comparison with factor-level definitions.
-- `Industry Definitions`: plain-language definitions for sectors, strategies, and scenario assumptions.
-- `Research`: backend-orchestrated multi-agent market research runs, result history, and batch analysis.
+
+- **Deal Lab** — Prompt-driven recommendation logic, fund-size aware assumptions, strategy/sector/deal-size toggles, portfolio adjacency inputs, and memo export. Default landing tab.
+- **Radar** — Country ranking table (sortable columns) and cards, selected-market detail panel, weighted factors with confidence/freshness/trend, and scenario sensitivity.
+- **Deal Profile Radar** — Top-3 recommendation profile comparison with factor-level definitions.
+- **Research** — Backend-orchestrated multi-agent market research with 5 specialist personas, prompt-driven analysis, single-market or batch scans (Top 5 / Top 10 / All 53), structured verdict cards with collapsible sections.
 
 ## Current Coverage
 
-### Markets (20)
-- United States
-- Germany
-- Singapore
-- Canada
-- United Arab Emirates
-- United Kingdom
-- France
-- Netherlands
-- Japan
-- Australia
-- India
-- Brazil
-- Mexico
-- Spain
-- Italy
-- South Korea
-- Saudi Arabia
-- Sweden
-- Poland
-- Indonesia
+### Markets (53)
+
+| Region | Markets |
+|--------|---------|
+| North America | US, CA |
+| Europe | DE, GB, FR, NL, ES, IT, SE, PL, CH, DK, NO, FI, IE, AT, BE, CZ, PT, GR, HU, TR, RO |
+| Asia-Pacific | SG, JP, AU, IN, ID, KR, CN, HK, TW, VN, TH, PH, MY, NZ |
+| Middle East | AE, SA, IL, QA |
+| Africa | ZA, NG, EG, KE, MA |
+| Latin America | BR, MX, CL, CO, AR, PE, CR |
 
 ### Industries
-- Professional Services
-- Healthcare Services
-- Industrial Technology
-- Aerospace & Defense
-- Software & Data Services
-- Financial Services
-- Energy & Infrastructure
-- Consumer & Retail
-- Logistics & Transportation
-- Education & Training
-- Real Estate & Built Environment
-- Food & Agriculture
+Professional Services, Healthcare Services, Industrial Technology, Aerospace & Defense, Software & Data Services, Financial Services, Energy & Infrastructure, Consumer & Retail, Logistics & Transportation, Education & Training, Real Estate & Built Environment, Food & Agriculture
 
 ### Deal Strategy Modes
 - `Buyout`
@@ -64,17 +42,12 @@ Strata is a private equity and corporate development market-screening applicatio
 - `$250M-$1B`
 - `$1B+`
 
-## Methodology (Current)
+## Methodology
 
 ### Score Construction
 - `Overall Score = 35% Sector Fit + 65% Country Factor Score`
-- Country factor weights are dynamically rebalanced by strategy, sector, and deal size.
-- Recommendation bands:
-  - `Very strong`
-  - `Strong`
-  - `Moderate`
-  - `Weak`
-  - `Very weak`
+- Country factor weights are dynamically rebalanced by strategy, sector, and deal size (always sum to 1.0).
+- Recommendation bands: Very strong, Strong, Moderate, Weak, Very weak (strategy-specific thresholds).
 
 ### Attractiveness Factors
 - Market size and depth
@@ -93,9 +66,14 @@ Strata is a private equity and corporate development market-screening applicatio
 - Geopolitical risk
 - Deal execution risk
 
+### Scenario Stress Testing
+Bull and bear cases apply independent shifts to each factor (e.g., bear: economicStrength -10, geopoliticalRisk +10) rather than flat score adjustments. This produces differentiated scenario spreads per country.
+
+### Portfolio Adjacency Overlay
+0 to +8 points based on existing sector/region footprint and operational capabilities.
+
 ### Transparency in UI
-- Per-factor value, weight, contribution, trend direction, confidence, and last refreshed timestamp.
-- Explicit display of model assumptions in Deal Lab and Radar contexts.
+Per-factor value, weight, contribution, trend direction, confidence, and last refreshed timestamp. Explicit display of model assumptions in Deal Lab and Radar contexts.
 
 ## Data Sources (IC-grade priority)
 Primary sources used in ingestion and market factors:
@@ -104,9 +82,29 @@ Primary sources used in ingestion and market factors:
 - World Bank Global Financial Development Database (GFDD)
 - OECD-linked national accounts and reference series where available
 
-Core indicator mapping is implemented in:
-- `ingestion/update-indicators.mjs`
-- Generated output: `src/data/indicatorOverrides.ts`
+**Live indicator overrides:** The ingestion pipeline fetches GDP growth, FDI, inflation, tariff, and trade openness data from the World Bank and IMF APIs, scoring against absolute benchmarks (not relative ranking). Overrides `economicStrength` and `taxTariffFriction` for all 53 markets.
+
+Core indicator mapping: `ingestion/update-indicators.mjs` → `src/data/indicatorOverrides.ts`
+
+## Research Pipeline
+
+5 AI analyst personas run in parallel via `claude -p` CLI:
+
+| Persona | Focus |
+|---------|-------|
+| Senior Macroeconomist | GDP dynamics, inflation, FDI, currency risk, labor markets |
+| Senior Regulatory Analyst | Foreign ownership, licensing, competition review, data protection |
+| Senior Deal Execution Specialist | Deal volume, exit environment, legal infrastructure, advisor ecosystem |
+| Senior Geopolitical Risk Analyst | Political stability, sanctions, trade tensions, institutional quality |
+| Senior Industry Analyst | Market size, competitive landscape, M&A activity, growth drivers |
+
+Each persona receives a data-sources skill with API references (World Bank, IMF, OECD, FRED, WGI, Transparency International, etc.) and CLI tool guidance for web search and data processing.
+
+Results are aggregated into an ensemble score with confidence-weighted averaging and consensus detection (strong / moderate / split).
+
+**Prompt-driven research:** The deal team provides a research prompt that becomes the primary driver of all 5 agent analyses. Agents address specific questions and concerns directly.
+
+**Batch scanning:** Run research across Top 5, Top 10, or all 53 markets in parallel.
 
 ## Research Backend
 The frontend can run with no backend for static scoring views, but `Research` requires a running backend.
@@ -117,7 +115,7 @@ npm run backend
 ```
 Default URL: `http://localhost:8787`
 
-### Optional backend environment variables
+### Backend environment variables
 - `STRATA_BACKEND_PORT` (default `8787`)
 - `STRATA_BACKEND_API_KEY` (enables `X-API-Key` auth)
 - `STRATA_BACKEND_CORS_ORIGINS` (comma-separated allowlist or `*`)
@@ -141,24 +139,40 @@ Default URL: `http://localhost:8787`
 - `GET /api/monitor-runs`
 - `POST /api/monitor-runs`
 
-Detailed runbook: [docs/backend-runbook.md](/Users/sarahodell/Documents/New%20project/docs/backend-runbook.md)
+## Tech Stack
+- React + TypeScript + Vite (frontend)
+- Express (backend API)
+- CSS custom design tokens ("Restrained Dark Intelligence" design system)
+- `claude -p` CLI for agentic research
+- World Bank / IMF APIs for live indicator ingestion
+- Playwright for regulation monitoring
 
 ## Local Development
+
 Install dependencies:
 ```bash
 npm install
 ```
 
-Frontend dev server:
+Frontend dev server (port 5173):
 ```bash
 npm run dev
 ```
 
-Build/lint/test:
+Backend (port 8787):
+```bash
+npm run backend
+```
+
+Both together:
+```bash
+npm run backend & npm run dev
+```
+
+Build/lint:
 ```bash
 npm run build
 npm run lint
-npm test
 ```
 
 Preview production build:
@@ -168,9 +182,15 @@ npm run preview
 ```
 
 ## Operations Scripts
-Indicator ingestion:
+
+Indicator ingestion (World Bank + IMF data for all 53 markets):
 ```bash
 npm run ingest:indicators
+```
+
+Research (single market):
+```bash
+npm run research -- --country US --countryCode US --sector "Professional Services" --strategy Buyout --prompt "What are the key risks?"
 ```
 
 Regulation monitor once:
@@ -188,14 +208,14 @@ Custom monitor cron:
 REG_MONITOR_CRON="0 */4 * * *" npm run monitor:regulations
 ```
 
-Persist score snapshots via backend:
-```bash
-STRATA_BACKEND_URL=http://localhost:8787 npm run snapshot:persist
-```
-
 Memo export:
 ```bash
 npm run memo:export -- --country DE --strategy Buyout --sector "Industrial Technology"
+```
+
+Persist score snapshots via backend:
+```bash
+STRATA_BACKEND_URL=http://localhost:8787 npm run snapshot:persist
 ```
 
 ## Deployment
@@ -215,5 +235,4 @@ If you do not see the latest frontend, force refresh with:
   - `.strata/indicator-quality-latest.json`
 
 ## Notes
-- The `dexter/` directory is retained only as reference context; the current product and scoring engine are implemented in this Strata codebase.
 - `.strata/` and `reports/` are gitignored local runtime artifacts.

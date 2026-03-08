@@ -483,6 +483,19 @@ function App() {
   const [researchResults, setResearchResults] = useState<ResearchResult[]>([])
   const [selectedResearch, setSelectedResearch] = useState<ResearchResult | null>(null)
   const [batchStatus, setBatchStatus] = useState<{ total: number; completed: number; running: boolean }>({ total: 0, completed: 0, running: false })
+  const [expandedVerdictSections, setExpandedVerdictSections] = useState<Record<string, Set<string>>>({})
+
+  const toggleVerdictSection = (persona: string, section: string) => {
+    setExpandedVerdictSections((prev) => {
+      const current = prev[persona] ?? new Set<string>()
+      const next = new Set(current)
+      if (next.has(section)) next.delete(section)
+      else next.add(section)
+      return { ...prev, [persona]: next }
+    })
+  }
+  const isVerdictSectionOpen = (persona: string, section: string) =>
+    expandedVerdictSections[persona]?.has(section) ?? false
   const [sortColumn, setSortColumn] = useState<string>('score')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [selectedTableCountryCode, setSelectedTableCountryCode] = useState<string | null>(null)
@@ -1675,21 +1688,21 @@ function App() {
             <>
               <section className="research-aggregate-panel">
                 <button type="button" className="detail-toggle" onClick={() => setSelectedResearch(null)}>
-                  ← All results
+                  \u2190 All results
                 </button>
                 <div className="research-aggregate-header">
-                  <div>
+                  <div className="aggregate-left">
                     <p className="eyebrow">Ensemble Research Report</p>
-                    <h3>{selectedResearch.country} · {selectedResearch.sector}</h3>
+                    <h3>{selectedResearch.country} \u00B7 {selectedResearch.sector}</h3>
                     <p className="prompt-subtitle">
-                      {selectedResearch.strategy} · {new Date(selectedResearch.runAt).toLocaleDateString()} · {selectedResearch.verdicts.length} analysts
+                      {selectedResearch.strategy} \u00B7 {new Date(selectedResearch.runAt).toLocaleDateString()} \u00B7 {selectedResearch.verdicts.length} analysts
                     </p>
                     {selectedResearch.prompt && (
-                      <p className="research-prompt-display">"{selectedResearch.prompt}"</p>
+                      <p className="research-prompt-display">\u201C{selectedResearch.prompt}\u201D</p>
                     )}
                   </div>
-                  <div className="score-stack">
-                    <p className="score">{selectedResearch.aggregateScore}</p>
+                  <div className="aggregate-score-block">
+                    <p className="aggregate-score">{selectedResearch.aggregateScore}</p>
                     <p className={badgeClass(selectedResearch.aggregateRecommendation)}>
                       {selectedResearch.aggregateRecommendation}
                     </p>
@@ -1699,64 +1712,119 @@ function App() {
                     <p className="meta">Confidence {Math.round(selectedResearch.aggregateConfidence * 100)}%</p>
                   </div>
                 </div>
+                <div className="analyst-score-strip">
+                  {selectedResearch.verdicts.map((v) => (
+                    <div key={v.persona} className="analyst-score-pip">
+                      <span className="analyst-pip-label">{personaLabel(v.persona).split(' ').map(w => w[0]).join('')}</span>
+                      <span className="analyst-pip-bar">
+                        <span className="analyst-pip-fill" style={{ width: `${v.score}%` }} />
+                      </span>
+                      <span className="analyst-pip-score">{v.score}</span>
+                    </div>
+                  ))}
+                </div>
               </section>
 
               <section className="research-verdicts-grid">
-                {selectedResearch.verdicts.map((v) => (
-                  <article key={v.persona} className="country-card verdict-card">
-                    <div className="top-row">
-                      <div>
-                        <p className="country-code">{personaLabel(v.persona)}</p>
-                      </div>
-                      <div className="score-stack">
-                        <p className="score">{v.score}</p>
-                        <p className={badgeClass(v.recommendation)}>{v.recommendation}</p>
-                        <p className="meta">{Math.round(v.confidence * 100)}% confidence</p>
-                      </div>
-                    </div>
-
-                    <p className="summary">{v.narrative}</p>
-
-                    {v.keyRisks.length > 0 && (
-                      <div className="verdict-section">
-                        <p className="detail-title">Key Risks</p>
-                        <ul>{v.keyRisks.map((r, i) => <li key={i}>{r}</li>)}</ul>
-                      </div>
-                    )}
-                    {v.keyOpportunities.length > 0 && (
-                      <div className="verdict-section">
-                        <p className="detail-title">Key Opportunities</p>
-                        <ul>{v.keyOpportunities.map((o, i) => <li key={i}>{o}</li>)}</ul>
-                      </div>
-                    )}
-                    {v.dataPoints.length > 0 && (
-                      <div className="verdict-section">
-                        <p className="detail-title">Data Points</p>
-                        <div className="data-points-grid">
-                          {v.dataPoints.map((d, i) => (
-                            <div key={i} className="weight-chip">
-                              <p>{d.label}</p>
-                              <span>{d.value} · {d.source} · {d.asOf}</span>
-                            </div>
-                          ))}
+                {selectedResearch.verdicts.map((v) => {
+                  const sectionCounts = {
+                    risks: v.keyRisks.length,
+                    opportunities: v.keyOpportunities.length,
+                    data: v.dataPoints.length,
+                    sources: v.sources.length,
+                  }
+                  return (
+                    <article key={v.persona} className="verdict-card">
+                      <div className="verdict-header">
+                        <div className="verdict-identity">
+                          <p className="verdict-persona">{personaLabel(v.persona)}</p>
+                          <div className="verdict-confidence-bar">
+                            <div className="verdict-confidence-fill" style={{ width: `${Math.round(v.confidence * 100)}%` }} />
+                          </div>
+                          <p className="verdict-confidence-label">{Math.round(v.confidence * 100)}% confidence</p>
+                        </div>
+                        <div className="verdict-score-block">
+                          <p className="verdict-score">{v.score}</p>
+                          <p className={badgeClass(v.recommendation)}>{v.recommendation}</p>
                         </div>
                       </div>
-                    )}
-                    {v.sources.length > 0 && (
-                      <div className="verdict-section">
-                        <p className="detail-title">Sources ({v.sources.length})</p>
-                        <ul>
-                          {v.sources.map((s, i) => (
-                            <li key={i}>
-                              <a href={s.url} target="_blank" rel="noreferrer">{s.title}</a>
-                              <span className="factor-quality">{s.relevance}</span>
-                            </li>
-                          ))}
-                        </ul>
+
+                      <div className="verdict-narrative">
+                        <p>{v.narrative}</p>
                       </div>
-                    )}
-                  </article>
-                ))}
+
+                      <div className="verdict-sections">
+                        {sectionCounts.risks > 0 && (
+                          <div className={`verdict-accordion ${isVerdictSectionOpen(v.persona, 'risks') ? 'is-open' : ''}`}>
+                            <button type="button" className="verdict-accordion-trigger" onClick={() => toggleVerdictSection(v.persona, 'risks')}>
+                              <span className="verdict-accordion-icon">{isVerdictSectionOpen(v.persona, 'risks') ? '\u2212' : '+'}</span>
+                              <span>Key Risks</span>
+                              <span className="verdict-count">{sectionCounts.risks}</span>
+                            </button>
+                            {isVerdictSectionOpen(v.persona, 'risks') && (
+                              <ul className="verdict-accordion-body">
+                                {v.keyRisks.map((r, i) => <li key={i}>{r}</li>)}
+                              </ul>
+                            )}
+                          </div>
+                        )}
+                        {sectionCounts.opportunities > 0 && (
+                          <div className={`verdict-accordion ${isVerdictSectionOpen(v.persona, 'opps') ? 'is-open' : ''}`}>
+                            <button type="button" className="verdict-accordion-trigger" onClick={() => toggleVerdictSection(v.persona, 'opps')}>
+                              <span className="verdict-accordion-icon">{isVerdictSectionOpen(v.persona, 'opps') ? '\u2212' : '+'}</span>
+                              <span>Key Opportunities</span>
+                              <span className="verdict-count">{sectionCounts.opportunities}</span>
+                            </button>
+                            {isVerdictSectionOpen(v.persona, 'opps') && (
+                              <ul className="verdict-accordion-body">
+                                {v.keyOpportunities.map((o, i) => <li key={i}>{o}</li>)}
+                              </ul>
+                            )}
+                          </div>
+                        )}
+                        {sectionCounts.data > 0 && (
+                          <div className={`verdict-accordion ${isVerdictSectionOpen(v.persona, 'data') ? 'is-open' : ''}`}>
+                            <button type="button" className="verdict-accordion-trigger" onClick={() => toggleVerdictSection(v.persona, 'data')}>
+                              <span className="verdict-accordion-icon">{isVerdictSectionOpen(v.persona, 'data') ? '\u2212' : '+'}</span>
+                              <span>Data Points</span>
+                              <span className="verdict-count">{sectionCounts.data}</span>
+                            </button>
+                            {isVerdictSectionOpen(v.persona, 'data') && (
+                              <div className="verdict-accordion-body data-points-grid">
+                                {v.dataPoints.map((d, i) => (
+                                  <div key={i} className="data-point-chip">
+                                    <p className="data-point-label">{d.label}</p>
+                                    <p className="data-point-value">{d.value}</p>
+                                    <p className="data-point-meta">{d.source} · {d.asOf}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {sectionCounts.sources > 0 && (
+                          <div className={`verdict-accordion ${isVerdictSectionOpen(v.persona, 'sources') ? 'is-open' : ''}`}>
+                            <button type="button" className="verdict-accordion-trigger" onClick={() => toggleVerdictSection(v.persona, 'sources')}>
+                              <span className="verdict-accordion-icon">{isVerdictSectionOpen(v.persona, 'sources') ? '\u2212' : '+'}</span>
+                              <span>Sources</span>
+                              <span className="verdict-count">{sectionCounts.sources}</span>
+                            </button>
+                            {isVerdictSectionOpen(v.persona, 'sources') && (
+                              <ul className="verdict-accordion-body verdict-sources">
+                                {v.sources.map((s, i) => (
+                                  <li key={i}>
+                                    <a href={s.url} target="_blank" rel="noreferrer">{s.title}</a>
+                                    <span className="verdict-source-relevance">{s.relevance}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </article>
+                  )
+                })}
               </section>
             </>
           ) : (
@@ -1770,20 +1838,34 @@ function App() {
                   No research results yet. Run your first analysis above.
                 </p>
               ) : (
-                <section className="prompt-results research-results-list">
+                <section className="research-results-list">
                   {researchResults.map((r, i) => (
                     <article
                       key={i}
-                      className="prompt-result-card research-result-item"
+                      className="result-card"
                       onClick={() => setSelectedResearch(r)}
                     >
-                      <p className="top-rank">{r.countryCode}</p>
-                      <h4>{r.country}</h4>
-                      <p className="region">{r.sector} · {r.strategy}</p>
-                      <p className="top-score">{r.aggregateScore}</p>
-                      <p className={badgeClass(r.aggregateRecommendation)}>{r.aggregateRecommendation}</p>
-                      <p className={`research-consensus consensus-${r.consensus}`}>{r.consensus} consensus</p>
-                      <p className="meta">{new Date(r.runAt).toLocaleDateString()}</p>
+                      <div className="result-card-header">
+                        <div className="result-card-left">
+                          <p className="result-card-code">{r.countryCode}</p>
+                          <div>
+                            <h4 className="result-card-country">{r.country}</h4>
+                            <p className="result-card-meta">{r.sector} \u00B7 {r.strategy}</p>
+                          </div>
+                        </div>
+                        <div className="result-card-score-block">
+                          <p className="result-card-score">{r.aggregateScore}</p>
+                          <p className={badgeClass(r.aggregateRecommendation)}>{r.aggregateRecommendation}</p>
+                        </div>
+                      </div>
+                      <div className="result-card-footer">
+                        <p className={`research-consensus consensus-${r.consensus}`}>{r.consensus} consensus</p>
+                        <p className="result-card-date">{new Date(r.runAt).toLocaleDateString()}</p>
+                        <p className="result-card-analysts">{r.verdicts.length} analysts</p>
+                      </div>
+                      <div className="result-card-score-bar">
+                        <div className="result-card-score-fill" style={{ width: `${r.aggregateScore}%` }} />
+                      </div>
                     </article>
                   ))}
                 </section>
