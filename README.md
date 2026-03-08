@@ -2,118 +2,112 @@
 
 Live site: [https://sarah-odell.github.io/Strata/](https://sarah-odell.github.io/Strata/)
 
-Strata is a PE/corp-dev decision support tool for market expansion screening.
+Strata is a PE/corp-dev decision support tool for market expansion screening. It combines quantitative country scoring with an AI-powered multi-agent research pipeline to produce investment-grade market assessments.
 
-App sections:
-- `Radar`: scoring, ranking table/cards, and transparent factor breakdowns
-- `Deal Lab`: portfolio adjacency inputs, prompt-based tailored recommendations, and a deal profile radar chart auto-bound to prompt context
-- `Industry Definitions`: shared taxonomy and strategy/deal-size definitions
+## App sections
 
-## What it does
-- Scores countries by strategy and industry.
-- Shows transparent factor scoring with citations.
-- Provides scenario views (`base`, `upside`, `downside`).
-- Adds a deal-team prompt tool that parses user context (fund size, target geography, strategy cues) and returns a tailored top-3 market view.
-- Supports portfolio adjacency modeling (existing sectors, regions, and capabilities) that adjusts market rankings.
-- Includes a deal-profile radar chart for each market (market position, growth, technology, customer quality, regulatory risk, integration risk).
-- Monitors regulation sources across all tracked markets on a schedule.
-- Exports memo drafts (`.md` and `.pdf`).
-- Stores snapshots and monitor runs via a lightweight backend API.
+- **Radar** — Scoring table with sortable columns, ranking cards, transparent factor breakdowns, deal profile radar chart bound to prompt context
+- **Deal Lab** — Portfolio adjacency inputs, prompt-based tailored recommendations (parses fund size, target geography, strategy cues), deal-team memo exports
+- **Research** — AI ensemble research with 5 specialist personas, prompt-driven analysis, single-market or batch scans (Top 5 / Top 10 / All 53), structured verdict cards with collapsible sections
 
 ## Coverage
-Tracked markets (20):
-- United States
-- Germany
-- Singapore
-- Canada
-- United Arab Emirates
-- United Kingdom
-- France
-- Netherlands
-- Japan
-- Australia
-- India
-- Brazil
-- Mexico
-- Spain
-- Italy
-- South Korea
-- Saudi Arabia
-- Sweden
-- Poland
-- Indonesia
 
-Industries:
-- Professional Services
-- Healthcare Services
-- Industrial Technology
-- Aerospace & Defense
-- Software & Data Services
-- Financial Services
-- Energy & Infrastructure
-- Consumer & Retail
-- Logistics & Transportation
-- Education & Training
-- Real Estate & Built Environment
-- Food & Agriculture
+53 tracked markets across 6 regions:
 
-Strategies:
-- `Buyout`
-- `Growth`
-- `Low-Risk Entry`
+| Region | Markets |
+|--------|---------|
+| North America | US, CA |
+| Europe | DE, GB, FR, NL, ES, IT, SE, PL, CH, DK, NO, FI, IE, AT, BE, CZ, PT, GR, HU, TR, RO |
+| Asia-Pacific | SG, JP, AU, IN, ID, KR, CN, HK, TW, VN, TH, PH, MY, NZ |
+| Middle East | AE, SA, IL, QA |
+| Africa | ZA, NG, EG, KE, MA |
+| Latin America | BR, MX, CL, CO, AR, PE, CR |
 
-Scenario cases:
-- `Base Case`: Most likely operating environment under current macro and policy assumptions.
-- `Bull Case`: Upside environment with stronger demand/execution and more favorable policy conditions.
-- `Bear Case`: Downside environment with weaker growth and higher regulatory/geopolitical friction.
+12 industries: Professional Services, Healthcare Services, Industrial Technology, Aerospace & Defense, Software & Data Services, Financial Services, Energy & Infrastructure, Consumer & Retail, Logistics & Transportation, Education & Training, Real Estate & Built Environment, Food & Agriculture
 
-Deal size bands:
-- `Small Deal`: Under $250 million enterprise value
-- `Mid Deal`: $250 million to $1 billion enterprise value
-- `Large Deal`: Over $1 billion enterprise value
+3 strategies: Buyout, Growth, Low-Risk Entry
 
 ## Scoring model
-Overall score:
-- `35%` sector fit
-- `65%` weighted country factors
 
-Factors:
+Overall score = 35% sector fit + 65% weighted country factors.
+
+**Factors** (weights vary by strategy, always sum to 1.0):
 - Economic strength
-- Regulatory complexity
-- Tax/tariff friction
-- Geopolitical risk
-- Deal execution risk
-- Portfolio adjacency overlay (0 to +8 points)
+- Regulatory complexity (inverted — lower is better)
+- Tax/tariff friction (inverted)
+- Geopolitical risk (inverted)
+- Deal execution risk (inverted)
 
-Recommendation bands are strategy-specific (`Very strong`, `Strong`, `Moderate`, `Weak`, `Very weak`).
+**Scenario stress testing:** Bull and bear cases apply independent shifts to each factor (e.g., bear: economicStrength -10, geopoliticalRisk +10) rather than flat score adjustments. This produces differentiated scenario spreads per country.
+
+**Deal size adjustment:** Small/large deals shift scores based on friction or scale factors.
+
+**Portfolio adjacency overlay:** 0 to +8 points based on existing sector/region footprint and operational capabilities.
+
+Recommendation bands are strategy-specific: Very strong, Strong, Moderate, Weak, Very weak.
+
+**Live indicator overrides:** The ingestion pipeline fetches GDP growth, FDI, inflation, tariff, and trade openness data from the World Bank and IMF APIs, scoring against absolute benchmarks (not relative ranking). Overrides `economicStrength` and `taxTariffFriction` for all 53 markets.
+
+## Research pipeline
+
+5 AI analyst personas run in parallel via `claude -p` CLI:
+
+| Persona | Focus |
+|---------|-------|
+| Senior Macroeconomist | GDP dynamics, inflation, FDI, currency risk, labor markets |
+| Senior Regulatory Analyst | Foreign ownership, licensing, competition review, data protection |
+| Senior Deal Execution Specialist | Deal volume, exit environment, legal infrastructure, advisor ecosystem |
+| Senior Geopolitical Risk Analyst | Political stability, sanctions, trade tensions, institutional quality |
+| Senior Industry Analyst | Market size, competitive landscape, M&A activity, growth drivers |
+
+Each persona receives a data-sources skill with API references (World Bank, IMF, OECD, FRED, WGI, Transparency International, etc.) and CLI tool guidance for web search and data processing.
+
+Results are aggregated into an ensemble score with confidence-weighted averaging and consensus detection (strong / moderate / split).
+
+**Prompt-driven research:** The deal team provides a research prompt that becomes the primary driver of all 5 agent analyses. Agents address specific questions and concerns directly.
+
+**Batch scanning:** Run research across Top 5, Top 10, or all 53 markets in parallel.
 
 ## Tech stack
-- React + TypeScript + Vite
-- CSS (custom design tokens and component styles)
-- Node scripts for ingestion, monitoring, reporting
-- Express for local backend persistence
+
+- React + TypeScript + Vite (frontend)
+- Express (backend API on port 8787)
+- CSS custom design tokens ("Restrained Dark Intelligence" design system)
+- `claude -p` CLI for agentic research
+- World Bank / IMF APIs for live indicator ingestion
+- Playwright for regulation monitoring
 
 ## Run locally
-Install:
+
 ```bash
 npm install
 ```
 
-Frontend:
+Frontend (port 5173):
 ```bash
 npm run dev
 ```
 
-Checks:
+Backend (port 8787):
 ```bash
-npm run build
-npm run lint
+npm run backend
+```
+
+Both together:
+```bash
+npm run backend & npm run dev
 ```
 
 ## Key scripts
-Indicator ingestion:
+
+Indicator ingestion (World Bank + IMF data for all 53 markets):
 ```bash
 npm run ingest:indicators
+```
+
+Research (single market):
+```bash
+npm run research -- --country US --countryCode US --sector "Professional Services" --strategy Buyout --prompt "What are the key risks?"
 ```
 
 Regulation monitor (one-shot):
@@ -126,34 +120,46 @@ Regulation monitor (every 6h):
 npm run monitor:regulations
 ```
 
-Custom monitor schedule:
-```bash
-REG_MONITOR_CRON="0 */4 * * *" npm run monitor:regulations
-```
-
 Memo export:
 ```bash
 npm run memo:export -- --country DE --strategy Buyout --sector "Industrial Technology"
 ```
 
-Backend API:
-```bash
-npm run backend
-```
-
-Persist score snapshots:
+Snapshot persistence:
 ```bash
 STRATA_BACKEND_URL=http://localhost:8787 npm run snapshot:persist
 ```
 
+Build and lint:
+```bash
+npm run build
+npm run lint
+```
+
+## Backend API
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/health` | Health check |
+| GET | `/api/snapshots` | List score snapshots |
+| POST | `/api/snapshots` | Save a score snapshot |
+| GET | `/api/monitor-runs` | List regulation monitor runs |
+| POST | `/api/monitor-runs` | Save a monitor run |
+| POST | `/api/research` | Start single-market research job |
+| GET | `/api/research/jobs/:id` | Poll research job status |
+| POST | `/api/research/batch` | Start multi-market batch research |
+| GET | `/api/research/results` | List completed research results |
+
 ## Auto-deploy
+
 Frontend auto-deploys to GitHub Pages on every push to `main`.
 
-Workflow:
-- `.github/workflows/deploy-frontend.yml`
+Workflow: `.github/workflows/deploy-frontend.yml`
 
 ## Local data locations
+
 - Indicator overrides: `src/data/indicatorOverrides.ts`
+- Research results: `.strata/research/`
 - Monitor state: `.strata/regulation-monitor-state.json`
 - Backend store: `.strata/backend-store.json`
 - Generated reports/memos: `reports/`
