@@ -598,10 +598,10 @@ function App() {
     () => getEffectiveFactorWeights(strategy, dealSize, sector),
     [strategy, dealSize, sector],
   )
-  const radarSize = 460
+  const radarSize = 430
   const radarCenter = radarSize / 2
-  const radarRadius = 102
-  const radarLabelRadius = radarRadius + 14
+  const radarRadius = 100
+  const radarLabelRadius = radarRadius + 13
   const radarLevels = [20, 40, 60, 80, 100]
 
   const loadResearchResults = async () => {
@@ -1466,7 +1466,7 @@ function App() {
                               textAnchor={textAnchor}
                               dominantBaseline="middle"
                               fill="rgba(255,255,255,0.5)"
-                              fontSize="11"
+                              fontSize="12"
                               fontFamily="Inter, system-ui, sans-serif"
                             >
                               {metric.label}
