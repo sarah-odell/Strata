@@ -598,12 +598,10 @@ function App() {
     () => getEffectiveFactorWeights(strategy, dealSize, sector),
     [strategy, dealSize, sector],
   )
-  const radarWidth = 540
-  const radarHeight = 460
-  const radarCenterX = 292
-  const radarCenterY = radarHeight / 2
-  const radarRadius = 120
-  const radarLabelRadius = radarRadius + 28
+  const radarSize = 460
+  const radarCenter = radarSize / 2
+  const radarRadius = 102
+  const radarLabelRadius = radarRadius + 14
   const radarLevels = [20, 40, 60, 80, 100]
 
   const loadResearchResults = async () => {
@@ -1383,8 +1381,8 @@ function App() {
                       metricIndex,
                       radarMetrics.length,
                       metric.value,
-                      radarCenterX,
-                      radarCenterY,
+                      radarCenter,
+                      radarCenter,
                       radarRadius,
                     )
                     return `${point.x},${point.y}`
@@ -1402,7 +1400,7 @@ function App() {
                     <p className={badgeClass(profile.scenarioRecommendation)}>{profile.scenarioRecommendation}</p>
 
                     <svg
-                      viewBox={`0 0 ${radarWidth} ${radarHeight}`}
+                      viewBox={`0 0 ${radarSize} ${radarSize}`}
                       role="img"
                       aria-label={`Deal profile radar for ${profile.name}`}
                       className="radar-chart"
@@ -1414,8 +1412,8 @@ function App() {
                               metricIndex,
                               radarMetrics.length,
                               level,
-                              radarCenterX,
-                              radarCenterY,
+                              radarCenter,
+                              radarCenter,
                               radarRadius,
                             )
                             return `${point.x},${point.y}`
@@ -1437,16 +1435,16 @@ function App() {
                           metricIndex,
                           radarMetrics.length,
                           100,
-                          radarCenterX,
-                          radarCenterY,
+                          radarCenter,
+                          radarCenter,
                           radarRadius,
                         )
                         const labelPos = radarPoint(
                           metricIndex,
                           radarMetrics.length,
                           100,
-                          radarCenterX,
-                          radarCenterY,
+                          radarCenter,
+                          radarCenter,
                           radarLabelRadius,
                         )
                         const angle = -Math.PI / 2 + (metricIndex / radarMetrics.length) * Math.PI * 2
@@ -1455,8 +1453,8 @@ function App() {
                         return (
                           <g key={`axis-${profile.code}-${metricIndex}`}>
                             <line
-                              x1={radarCenterX}
-                              y1={radarCenterY}
+                              x1={radarCenter}
+                              y1={radarCenter}
                               x2={end.x}
                               y2={end.y}
                               stroke="rgba(255,255,255,0.08)"
@@ -1468,7 +1466,7 @@ function App() {
                               textAnchor={textAnchor}
                               dominantBaseline="middle"
                               fill="rgba(255,255,255,0.5)"
-                              fontSize="10"
+                              fontSize="11"
                               fontFamily="Inter, system-ui, sans-serif"
                             >
                               {metric.label}
@@ -1489,8 +1487,8 @@ function App() {
                           metricIndex,
                           radarMetrics.length,
                           metric.value,
-                          radarCenterX,
-                          radarCenterY,
+                          radarCenter,
+                          radarCenter,
                           radarRadius,
                         )
                         return (
