@@ -11,6 +11,7 @@
     "snapshot:persist": "node --import tsx/esm reporting/persist-snapshot.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test": "vitest run",
     "preview": "vite preview",
     "monitor:regulations:once": "node monitoring/regulation-monitor.mjs --once",
     "monitor:regulations": "node monitoring/regulation-monitor.mjs --schedule \"0 */6 * * *\"",
@@ -37,6 +38,7 @@
     "tsx": "^4.20.5",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.48.0",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "vitest": "^3.2.4"
   }
 }

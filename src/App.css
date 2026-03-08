@@ -783,7 +783,8 @@ li:first-child {
 .country-table td:nth-child(6),
 .country-table td:nth-child(7),
 .country-table td:nth-child(8),
-.country-table td:nth-child(9) {
+.country-table td:nth-child(9),
+.country-table td:nth-child(10) {
   font-family: 'JetBrains Mono', monospace;
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
@@ -794,7 +795,8 @@ li:first-child {
 .country-table th:nth-child(6),
 .country-table th:nth-child(7),
 .country-table th:nth-child(8),
-.country-table th:nth-child(9) {
+.country-table th:nth-child(9),
+.country-table th:nth-child(10) {
   text-align: center;
 }
 
@@ -811,7 +813,8 @@ li:first-child {
 .country-table td:nth-child(6),
 .country-table td:nth-child(7),
 .country-table td:nth-child(8),
-.country-table td:nth-child(9) {
+.country-table td:nth-child(9),
+.country-table td:nth-child(10) {
   text-align: center;
 }
 

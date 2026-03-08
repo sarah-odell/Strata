@@ -1,9 +1,11 @@
-import { writeFile } from 'node:fs/promises'
+import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
 
 const rootDir = process.cwd()
 const outputPath = path.join(rootDir, 'src', 'data', 'indicatorOverrides.ts')
+const rawSnapshotPath = path.join(rootDir, '.strata', 'indicator-raw-latest.json')
+const qualitySnapshotPath = path.join(rootDir, '.strata', 'indicator-quality-latest.json')
 const runDate = new Date().toISOString().slice(0, 10)
 
 const countries = {
@@ -39,6 +41,39 @@ const wbIndicators = {
   regulatoryQuality: 'RQ.EST',
   tertiaryEnrollment: 'SE.TER.ENRR',
   unemployment: 'SL.UEM.TOTL.ZS',
+}
+
+const indicatorFallbacks = {
+  gdpCurrentUsd: 0,
+  population: 0,
+  gdpGrowthPerCapita: 0,
+  gdpGrowthTotal: 0,
+  inflation: 0,
+  fdi: 0,
+  tariff: 0,
+  tradeOpen: 0,
+  privateCredit: 0,
+  bankConcentration3: 65,
+  bankConcentration5: 75,
+  populationDensity: 0,
+  urbanShare: 0,
+  internetUsers: 0,
+  fixedBroadband: 0,
+  regulatoryQuality: 0,
+  tertiaryEnrollment: 0,
+  unemployment: 8,
+}
+
+const ingestionFreshnessSlaDays = {
+  economicStrength: 35,
+  taxTariffFriction: 35,
+  marketSizeDepth: 45,
+  marketGrowthMomentum: 45,
+  marketConcentrationRisk: 90,
+  customerDensity: 90,
+  digitalReadiness: 90,
+  licensingComplexity: 120,
+  talentAvailability: 120,
 }
 
 const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, value))
@@ -263,27 +298,44 @@ const collectIndicatorValues = async () => {
       const imfGrowthValues = imfCountry && typeof imfCountry === 'object' ? Object.values(imfCountry) : []
       const imfGrowth = imfGrowthValues.length > 0 ? Number(imfGrowthValues[imfGrowthValues.length - 1]) : null
 
+      const imputation = {}
+      const numericOrFallback = (name, value, fallback) => {
+        if (value === null || value === undefined || Number.isNaN(Number(value))) {
+          imputation[name] = {
+            usedFallback: true,
+            fallbackValue: fallback,
+          }
+          return Number(fallback)
+        }
+        imputation[name] = {
+          usedFallback: false,
+          fallbackValue: fallback,
+        }
+        return Number(value)
+      }
+
       return {
         code,
         iso3,
-        gdpCurrentUsd: Number(gdpCurrentUsd ?? 0),
-        population: Number(population ?? 0),
-        gdpGrowthPerCapita: Number(gdpGrowth ?? imfGrowth ?? 0),
-        gdpGrowthTotal: Number(gdpTotalGrowth ?? imfGrowth ?? 0),
-        inflation: Number(inflation ?? 0),
-        fdi: Number(fdi ?? 0),
-        tariff: Number(tariff ?? 0),
-        tradeOpen: Number(tradeOpen ?? 0),
-        privateCredit: Number(privateCredit ?? 0),
-        bankConcentration3: Number(bankConcentration3 ?? 65),
-        bankConcentration5: Number(bankConcentration5 ?? 75),
-        populationDensity: Number(populationDensity ?? 0),
-        urbanShare: Number(urbanShare ?? 0),
-        internetUsers: Number(internetUsers ?? 0),
-        fixedBroadband: Number(fixedBroadband ?? 0),
-        regulatoryQuality: Number(regulatoryQuality ?? 0),
-        tertiaryEnrollment: Number(tertiaryEnrollment ?? 0),
-        unemployment: Number(unemployment ?? 8),
+        gdpCurrentUsd: numericOrFallback('gdpCurrentUsd', gdpCurrentUsd, indicatorFallbacks.gdpCurrentUsd),
+        population: numericOrFallback('population', population, indicatorFallbacks.population),
+        gdpGrowthPerCapita: numericOrFallback('gdpGrowthPerCapita', gdpGrowth ?? imfGrowth, indicatorFallbacks.gdpGrowthPerCapita),
+        gdpGrowthTotal: numericOrFallback('gdpGrowthTotal', gdpTotalGrowth ?? imfGrowth, indicatorFallbacks.gdpGrowthTotal),
+        inflation: numericOrFallback('inflation', inflation, indicatorFallbacks.inflation),
+        fdi: numericOrFallback('fdi', fdi, indicatorFallbacks.fdi),
+        tariff: numericOrFallback('tariff', tariff, indicatorFallbacks.tariff),
+        tradeOpen: numericOrFallback('tradeOpen', tradeOpen, indicatorFallbacks.tradeOpen),
+        privateCredit: numericOrFallback('privateCredit', privateCredit, indicatorFallbacks.privateCredit),
+        bankConcentration3: numericOrFallback('bankConcentration3', bankConcentration3, indicatorFallbacks.bankConcentration3),
+        bankConcentration5: numericOrFallback('bankConcentration5', bankConcentration5, indicatorFallbacks.bankConcentration5),
+        populationDensity: numericOrFallback('populationDensity', populationDensity, indicatorFallbacks.populationDensity),
+        urbanShare: numericOrFallback('urbanShare', urbanShare, indicatorFallbacks.urbanShare),
+        internetUsers: numericOrFallback('internetUsers', internetUsers, indicatorFallbacks.internetUsers),
+        fixedBroadband: numericOrFallback('fixedBroadband', fixedBroadband, indicatorFallbacks.fixedBroadband),
+        regulatoryQuality: numericOrFallback('regulatoryQuality', regulatoryQuality, indicatorFallbacks.regulatoryQuality),
+        tertiaryEnrollment: numericOrFallback('tertiaryEnrollment', tertiaryEnrollment, indicatorFallbacks.tertiaryEnrollment),
+        unemployment: numericOrFallback('unemployment', unemployment, indicatorFallbacks.unemployment),
+        imputation,
       }
     }),
   )
@@ -293,6 +345,7 @@ const collectIndicatorValues = async () => {
 
 const computeOverrides = (rows) => {
   const overrides = {}
+  const diagnostics = []
 
   for (const row of rows) {
     const growthScore = scoreGdpGrowth(row.gdpGrowthPerCapita)
@@ -347,9 +400,25 @@ const computeOverrides = (rows) => {
       licensingComplexity,
       talentAvailability,
     }
+
+    diagnostics.push({
+      code: row.code,
+      imputation: row.imputation,
+      derived: {
+        economicStrength,
+        taxTariffFriction,
+        marketSizeDepth,
+        marketGrowthMomentum,
+        marketConcentrationRisk,
+        customerDensity,
+        digitalReadiness,
+        licensingComplexity,
+        talentAvailability,
+      },
+    })
   }
 
-  return overrides
+  return { overrides, diagnostics }
 }
 
 const writeOverridesFile = async (overrides) => {
@@ -357,12 +426,38 @@ const writeOverridesFile = async (overrides) => {
   await writeFile(outputPath, output, 'utf-8')
 }
 
+const writeQualityArtifacts = async (rows, diagnostics) => {
+  await mkdir(path.join(rootDir, '.strata'), { recursive: true })
+  await writeFile(
+    rawSnapshotPath,
+    `${JSON.stringify({ runDate, source: 'ingestion/update-indicators.mjs', rows }, null, 2)}\n`,
+    'utf-8',
+  )
+  await writeFile(
+    qualitySnapshotPath,
+    `${JSON.stringify(
+      {
+        runDate,
+        indicatorFallbacks,
+        ingestionFreshnessSlaDays,
+        diagnostics,
+      },
+      null,
+      2,
+    )}\n`,
+    'utf-8',
+  )
+}
+
 const main = async () => {
   const rows = await collectIndicatorValues()
-  const overrides = computeOverrides(rows)
+  const { overrides, diagnostics } = computeOverrides(rows)
   await writeOverridesFile(overrides)
+  await writeQualityArtifacts(rows, diagnostics)
   console.log(`Indicator ingestion complete (${rows.length} countries).`)
   console.log(`Wrote ${outputPath}`)
+  console.log(`Wrote ${rawSnapshotPath}`)
+  console.log(`Wrote ${qualitySnapshotPath}`)
 }
 
 main().catch((error) => {

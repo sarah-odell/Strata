@@ -1,29 +1,19 @@
 # Strata: PE Expansion Intelligence
 
-Live site: [https://sarah-odell.github.io/Strata/](https://sarah-odell.github.io/Strata/)
+Live frontend: [https://sarah-odell.github.io/Strata/](https://sarah-odell.github.io/Strata/)
 
-Strata is a PE/corp-dev decision support tool for market expansion screening.
+Strata is a private equity and corporate development market-screening application for evaluating expansion markets by attractiveness, feasibility, and execution risk.
 
-App sections:
-- `Radar`: scoring, ranking table/cards, selected-market detail panel, and transparent factor breakdowns
-- `Deal Lab`: portfolio adjacency inputs, prompt-based tailored recommendations, and a deal profile radar chart auto-bound to prompt context
-- `Industry Definitions`: shared taxonomy and strategy/deal-size definitions
+## Product Surfaces
+- `Radar`: country ranking table/cards, selected-market detail, weighted factors, confidence, freshness, trend direction, and scenario sensitivity.
+- `Deal Lab`: prompt-driven recommendation logic, fund-size aware assumptions, strategy/sector/deal-size toggles, and memo export.
+- `Deal Profile Radar`: top-3 recommendation profile comparison with factor-level definitions.
+- `Industry Definitions`: plain-language definitions for sectors, strategies, and scenario assumptions.
+- `Research`: backend-orchestrated multi-agent market research runs, result history, and batch analysis.
 
-## What it does
-- Scores countries by strategy and industry.
-- Shows transparent factor scoring with citations.
-- Provides scenario views (`base`, `bull`, `bear`).
-- Defaults to table view in Radar, with the selected-market panel above the ranking table.
-- Adds a deal-team prompt tool that parses user context (fund size, target geography, strategy cues) and returns a tailored top-3 market view.
-- Supports portfolio adjacency modeling (existing sectors, regions, and capabilities) that adjusts market rankings.
-- Includes a deal-profile radar chart for each market (market position, growth, technology, customer quality, regulatory risk, integration risk).
-- Monitors regulation sources across all tracked markets on a schedule.
-- Exports Deal Lab memo drafts in-app as `.md`.
-- Supports CLI memo export as `.md` and `.pdf` into `reports/`.
-- Stores snapshots and monitor runs via a lightweight backend API.
+## Current Coverage
 
-## Coverage
-Tracked markets (20):
+### Markets (20)
 - United States
 - Germany
 - Singapore
@@ -45,7 +35,7 @@ Tracked markets (20):
 - Poland
 - Indonesia
 
-Industries:
+### Industries
 - Professional Services
 - Healthcare Services
 - Industrial Technology
@@ -59,109 +49,148 @@ Industries:
 - Real Estate & Built Environment
 - Food & Agriculture
 
-Strategies:
+### Deal Strategy Modes
 - `Buyout`
 - `Growth`
 - `Low-Risk Entry`
 
-Scenario cases:
-- `Base Case`: Most likely operating environment under current macro and policy assumptions.
-- `Bull Case`: Upside environment with stronger demand/execution and more favorable policy conditions.
-- `Bear Case`: Downside environment with weaker growth and higher regulatory/geopolitical friction.
+### Scenario Modes
+- `Base Case`: baseline macro and policy assumptions.
+- `Bull Case`: more favorable demand/execution environment.
+- `Bear Case`: stressed operating and policy environment.
 
-Deal size bands:
+### Deal Size Modes (USD)
 - `$25M-$250M`
 - `$250M-$1B`
 - `$1B+`
 
-## Scoring model
-Overall score:
-- `35%` sector fit
-- `65%` weighted country factors
-- Factor weights are dynamically rebalanced by deal size (`$25M-$250M`, `$250M-$1B`, `$1B+`) so small, mid, and large funds receive size-appropriate rankings.
+## Methodology (Current)
 
-Factors:
-- Attractiveness:
-- Market size & depth
+### Score Construction
+- `Overall Score = 35% Sector Fit + 65% Country Factor Score`
+- Country factor weights are dynamically rebalanced by strategy, sector, and deal size.
+- Recommendation bands:
+  - `Very strong`
+  - `Strong`
+  - `Moderate`
+  - `Weak`
+  - `Very weak`
+
+### Attractiveness Factors
+- Market size and depth
 - Market growth momentum
 - Customer density
 - Digital readiness
-- Strategic adjacency (modeled as portfolio adjacency overlay, `0` to `+8`)
-- Feasibility:
+- Strategic adjacency overlay (from Deal Lab profile)
+
+### Feasibility and Execution Factors
 - Regulatory complexity
 - Licensing complexity
 - Language barriers (execution proxy)
-- Competition intensity
+- Competition intensity (financial proxy)
 - Talent availability
-- Additional risk controls:
-- Tax/tariff friction
+- Tax and tariff friction
 - Geopolitical risk
 - Deal execution risk
 
-Recommendation bands are strategy-specific (`Very strong`, `Strong`, `Moderate`, `Weak`, `Very weak`).
+### Transparency in UI
+- Per-factor value, weight, contribution, trend direction, confidence, and last refreshed timestamp.
+- Explicit display of model assumptions in Deal Lab and Radar contexts.
 
-## IC-Grade Data Sources
-Strata’s core market factor ingestion uses primary institutional datasets:
-- International Monetary Fund (IMF) DataMapper / IFS-backed series
-- World Bank World Development Indicators (WDI) API
-- World Bank Global Financial Development Database (GFDD), including banking concentration metrics
-- OECD National Accounts and related reference series surfaced through WDI metadata
+## Data Sources (IC-grade priority)
+Primary sources used in ingestion and market factors:
+- International Monetary Fund (IMF)
+- World Bank World Development Indicators (WDI)
+- World Bank Global Financial Development Database (GFDD)
+- OECD-linked national accounts and reference series where available
 
-Key indicators used for the added market-structure factors:
-- `Market size & depth`: `NY.GDP.MKTP.CD`, `SP.POP.TOTL`, `FD.AST.PRVT.GD.ZS`
-- `Market growth momentum`: `NY.GDP.MKTP.KD.ZG`, `NY.GDP.PCAP.KD.ZG`, `BX.KLT.DINV.WD.GD.ZS`
-- `Market concentration risk`: `GFDD.OI.01`, `GFDD.OI.06`
-- `Customer density`: `EN.POP.DNST`, `SP.URB.TOTL.IN.ZS`, `SP.POP.TOTL`
-- `Digital readiness`: `IT.NET.USER.ZS`, `IT.NET.BBND.P2`
-- `Licensing complexity`: `RQ.EST` (regulatory quality estimate, inverted), with tax/tariff friction overlay
-- `Talent availability`: `SE.TER.ENRR`, `SL.UEM.TOTL.ZS`, and digital readiness
-
-Data transform and scoring logic live in:
+Core indicator mapping is implemented in:
 - `ingestion/update-indicators.mjs`
-- `src/data/indicatorOverrides.ts` (generated output snapshot)
+- Generated output: `src/data/indicatorOverrides.ts`
 
-## Tech stack
-- React + TypeScript + Vite
-- CSS (custom design tokens and component styles)
-- Node scripts for ingestion, monitoring, reporting
-- Express for local backend persistence
+## Research Backend
+The frontend can run with no backend for static scoring views, but `Research` requires a running backend.
 
-## Run locally
-Install:
+### Local backend
+```bash
+npm run backend
+```
+Default URL: `http://localhost:8787`
+
+### Optional backend environment variables
+- `STRATA_BACKEND_PORT` (default `8787`)
+- `STRATA_BACKEND_API_KEY` (enables `X-API-Key` auth)
+- `STRATA_BACKEND_CORS_ORIGINS` (comma-separated allowlist or `*`)
+- `STRATA_RATE_LIMIT_WINDOW_MS` (default `60000`)
+- `STRATA_RATE_LIMIT_MAX` (default `30`)
+- `STRATA_RESEARCH_JOB_TTL_HOURS` (default `24`)
+- `STRATA_RESEARCH_MAX_BATCH` (default `20`)
+- `STRATA_RESEARCH_MAX_PROMPT_CHARS` (default `5000`)
+- `STRATA_CLAUDE_CMD` (default `claude`)
+
+### Backend endpoints
+- `GET /health`
+- `GET /ready`
+- `POST /api/research`
+- `GET /api/research/jobs/:id`
+- `POST /api/research/jobs/:id/cancel`
+- `POST /api/research/batch`
+- `GET /api/research/results`
+- `GET /api/score-snapshots`
+- `POST /api/score-snapshots`
+- `GET /api/monitor-runs`
+- `POST /api/monitor-runs`
+
+Detailed runbook: [docs/backend-runbook.md](/Users/sarahodell/Documents/New%20project/docs/backend-runbook.md)
+
+## Local Development
+Install dependencies:
 ```bash
 npm install
 ```
 
-Frontend:
+Frontend dev server:
 ```bash
 npm run dev
 ```
 
-Checks:
+Build/lint/test:
 ```bash
 npm run build
 npm run lint
+npm test
 ```
 
-## Key scripts
+Preview production build:
+```bash
+npm run build
+npm run preview
+```
+
+## Operations Scripts
 Indicator ingestion:
 ```bash
 npm run ingest:indicators
 ```
 
-Regulation monitor (one-shot):
+Regulation monitor once:
 ```bash
 npm run monitor:regulations:once
 ```
 
-Regulation monitor (every 6h):
+Regulation monitor schedule:
 ```bash
 npm run monitor:regulations
 ```
 
-Custom monitor schedule:
+Custom monitor cron:
 ```bash
 REG_MONITOR_CRON="0 */4 * * *" npm run monitor:regulations
+```
+
+Persist score snapshots via backend:
+```bash
+STRATA_BACKEND_URL=http://localhost:8787 npm run snapshot:persist
 ```
 
 Memo export:
@@ -169,27 +198,22 @@ Memo export:
 npm run memo:export -- --country DE --strategy Buyout --sector "Industrial Technology"
 ```
 
-Backend API:
-```bash
-npm run backend
-```
+## Deployment
+- Frontend auto-deploys to GitHub Pages from `main` via `.github/workflows/deploy-frontend.yml`.
+- Research backend deployment is not included in this repository's GitHub Pages deployment.
 
-Persist score snapshots:
-```bash
-STRATA_BACKEND_URL=http://localhost:8787 npm run snapshot:persist
-```
-
-## Auto-deploy
-Frontend auto-deploys to GitHub Pages on every push to `main`.
-
-Workflow:
-- `.github/workflows/deploy-frontend.yml`
-
-If you do not see the latest UI on the live site, force refresh and load:
+If you do not see the latest frontend, force refresh with:
 - [https://sarah-odell.github.io/Strata/?v=latest](https://sarah-odell.github.io/Strata/?v=latest)
 
-## Local data locations
-- Indicator overrides: `src/data/indicatorOverrides.ts`
-- Monitor state: `.strata/regulation-monitor-state.json`
+## Local Artifacts
 - Backend store: `.strata/backend-store.json`
-- Generated reports/memos: `reports/`
+- Research jobs: `.strata/research-jobs.json`
+- Research output files: `.strata/research/`
+- Regulation monitor state: `.strata/regulation-monitor-state.json`
+- Indicator quality outputs:
+  - `.strata/indicator-raw-latest.json`
+  - `.strata/indicator-quality-latest.json`
+
+## Notes
+- The `dexter/` directory is retained only as reference context; the current product and scoring engine are implemented in this Strata codebase.
+- `.strata/` and `reports/` are gitignored local runtime artifacts.

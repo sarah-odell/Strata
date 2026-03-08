@@ -795,6 +795,36 @@ const baseFactorDefaults: Record<FactorKey, number> = {
   talentAvailability: 55,
 }
 
+const languageBarrierDirectScores: Partial<Record<string, number>> = {
+  US: 12,
+  GB: 10,
+  CA: 16,
+  SG: 18,
+  AE: 28,
+  DE: 42,
+  FR: 55,
+  NL: 26,
+  JP: 62,
+  AU: 14,
+  IN: 24,
+  BR: 58,
+  MX: 52,
+  ES: 56,
+  IT: 60,
+  KR: 64,
+  SA: 54,
+  SE: 22,
+  DK: 24,
+  NO: 22,
+  FI: 28,
+  CH: 36,
+  PL: 46,
+  ID: 58,
+  HK: 24,
+  IE: 12,
+  NZ: 14,
+}
+
 const withOverrides = (profile: BaseCountryProfile): CountryProfile => {
   const override = indicatorFactorOverrides[profile.code] ?? {}
   const factors: Record<FactorKey, number> = {
@@ -879,7 +909,7 @@ const withOverrides = (profile: BaseCountryProfile): CountryProfile => {
     },
     languageBarrier: {
       lastRefreshed: asOfDate,
-      confidence: 0.58,
+      confidence: languageBarrierDirectScores[profile.code] !== undefined ? 0.7 : 0.58,
       trendDirection: 'flat',
       delta: 0,
     },
@@ -897,8 +927,10 @@ const withOverrides = (profile: BaseCountryProfile): CountryProfile => {
   const aerospaceDefense = profile.sectorFit['Aerospace & Defense'] ?? 0
 
   const clampScore = (value: number): number => Math.max(0, Math.min(100, Math.round(value)))
-  // Language barriers are modeled as an execution proxy until multilingual talent datasets are added.
-  factors.languageBarrier = clampScore(Math.round(factors.dealExecutionRisk * 0.7 + (100 - factors.digitalReadiness) * 0.3))
+  // Prefer direct country-level language barrier mappings; otherwise fallback to an execution proxy.
+  factors.languageBarrier = languageBarrierDirectScores[profile.code] !== undefined
+    ? clampScore(languageBarrierDirectScores[profile.code] as number)
+    : clampScore(Math.round(factors.dealExecutionRisk * 0.7 + (100 - factors.digitalReadiness) * 0.3))
 
   const expandedSectorFit: Record<string, number> = {
     ...profile.sectorFit,

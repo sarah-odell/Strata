@@ -22,6 +22,8 @@ export type FactorWeight = {
   invert: boolean
 }
 
+type SectorFactorMultipliers = Partial<Record<FactorKey, number>>
+
 const dealSizeFactorMultipliers: Record<DealSize, Partial<Record<FactorKey, number>>> = {
   small: {
     marketSizeDepth: 0.72,
@@ -64,6 +66,55 @@ const dealSizeFactorMultipliers: Record<DealSize, Partial<Record<FactorKey, numb
     taxTariffFriction: 0.98,
     geopoliticalRisk: 1.08,
     dealExecutionRisk: 0.9,
+  },
+}
+
+const sectorFactorMultipliers: Record<string, SectorFactorMultipliers> = {
+  'Software & Data Services': {
+    digitalReadiness: 1.25,
+    talentAvailability: 1.16,
+    customerDensity: 1.08,
+    marketConcentrationRisk: 1.06,
+    taxTariffFriction: 0.9,
+  },
+  'Healthcare Services': {
+    licensingComplexity: 1.22,
+    regulatoryComplexity: 1.15,
+    talentAvailability: 1.14,
+    digitalReadiness: 1.06,
+  },
+  'Aerospace & Defense': {
+    licensingComplexity: 1.3,
+    geopoliticalRisk: 1.2,
+    marketConcentrationRisk: 1.16,
+    marketSizeDepth: 1.1,
+    languageBarrier: 0.95,
+  },
+  'Financial Services': {
+    licensingComplexity: 1.2,
+    regulatoryComplexity: 1.2,
+    digitalReadiness: 1.15,
+    talentAvailability: 1.1,
+    marketConcentrationRisk: 1.08,
+  },
+  'Industrial Technology': {
+    marketSizeDepth: 1.16,
+    customerDensity: 1.12,
+    talentAvailability: 1.1,
+    dealExecutionRisk: 1.08,
+  },
+  'Energy & Infrastructure': {
+    marketSizeDepth: 1.2,
+    licensingComplexity: 1.18,
+    geopoliticalRisk: 1.16,
+    marketConcentrationRisk: 1.08,
+    languageBarrier: 0.95,
+  },
+  'Professional Services': {
+    languageBarrier: 1.15,
+    customerDensity: 1.1,
+    talentAvailability: 1.12,
+    digitalReadiness: 1.08,
   },
 }
 
@@ -119,24 +170,21 @@ export const strategyWeights: Record<Strategy, FactorWeight[]> = {
   ],
 }
 
-const strategyRecommendationThresholds: Record<Strategy, RecommendationThreshold> = {
+const strategyRecommendationThresholds: Record<Strategy, Record<DealSize, RecommendationThreshold>> = {
   Buyout: {
-    veryStrongMin: 66,
-    strongMin: 58,
-    moderateMin: 50,
-    weakMin: 43,
+    small: { veryStrongMin: 67, strongMin: 59, moderateMin: 51, weakMin: 44 },
+    mid: { veryStrongMin: 64, strongMin: 56, moderateMin: 48, weakMin: 42 },
+    large: { veryStrongMin: 62, strongMin: 54, moderateMin: 46, weakMin: 40 },
   },
   Growth: {
-    veryStrongMin: 63,
-    strongMin: 55,
-    moderateMin: 48,
-    weakMin: 41,
+    small: { veryStrongMin: 66, strongMin: 58, moderateMin: 50, weakMin: 43 },
+    mid: { veryStrongMin: 63, strongMin: 55, moderateMin: 48, weakMin: 41 },
+    large: { veryStrongMin: 61, strongMin: 53, moderateMin: 46, weakMin: 39 },
   },
   'Low-Risk Entry': {
-    veryStrongMin: 68,
-    strongMin: 60,
-    moderateMin: 50,
-    weakMin: 44,
+    small: { veryStrongMin: 69, strongMin: 61, moderateMin: 52, weakMin: 45 },
+    mid: { veryStrongMin: 67, strongMin: 59, moderateMin: 50, weakMin: 43 },
+    large: { veryStrongMin: 65, strongMin: 57, moderateMin: 48, weakMin: 41 },
   },
 }
 
@@ -155,6 +203,7 @@ export type ScoredCountry = CountryProfile & {
   scenarioScore: number
   scenarioRecommendation: RecommendationLabel
   dealSizeAdjustment: number
+  deployabilityScore: number
   portfolioAdjacencyAdjustment: number
   scenarios: {
     base: number
@@ -169,12 +218,14 @@ const clamp = (value: number, min: number, max: number): number =>
 export const getEffectiveFactorWeights = (
   strategy: Strategy,
   dealSize: DealSize,
+  sector?: string,
 ): FactorWeight[] => {
   const base = strategyWeights[strategy]
   const multipliers = dealSizeFactorMultipliers[dealSize]
+  const sectorMultipliers = sector ? (sectorFactorMultipliers[sector] ?? {}) : {}
   const adjusted = base.map((factor) => ({
     ...factor,
-    weight: factor.weight * (multipliers[factor.key] ?? 1),
+    weight: factor.weight * (multipliers[factor.key] ?? 1) * (sectorMultipliers[factor.key] ?? 1),
   }))
   const totalWeight = adjusted.reduce((sum, factor) => sum + factor.weight, 0)
   return adjusted.map((factor) => ({ ...factor, weight: factor.weight / totalWeight }))
@@ -209,6 +260,49 @@ const dealSizeAdjustment = (profile: CountryProfile, dealSize: DealSize): number
     (100 - profile.factors.geopoliticalRisk) * 0.06
 
   return Math.round(clamp((scaleScore - 55) / 7, -8, 8))
+}
+
+const deployabilityScoreForDealSize = (profile: CountryProfile, dealSize: DealSize): number => {
+  if (dealSize === 'small') {
+    return Math.round(
+      clamp(
+        (100 - profile.factors.licensingComplexity) * 0.24 +
+          (100 - profile.factors.regulatoryComplexity) * 0.2 +
+          (100 - profile.factors.languageBarrier) * 0.16 +
+          (100 - profile.factors.dealExecutionRisk) * 0.16 +
+          profile.factors.customerDensity * 0.12 +
+          profile.factors.digitalReadiness * 0.12,
+        0,
+        100,
+      ),
+    )
+  }
+
+  if (dealSize === 'mid') {
+    return Math.round(
+      clamp(
+        profile.factors.marketSizeDepth * 0.4 +
+          profile.factors.customerDensity * 0.2 +
+          profile.factors.talentAvailability * 0.14 +
+          (100 - profile.factors.marketConcentrationRisk) * 0.12 +
+          (100 - profile.factors.licensingComplexity) * 0.14,
+        0,
+        100,
+      ),
+    )
+  }
+
+  return Math.round(
+    clamp(
+      profile.factors.marketSizeDepth * 0.58 +
+        profile.factors.marketGrowthMomentum * 0.16 +
+        profile.factors.talentAvailability * 0.1 +
+        (100 - profile.factors.marketConcentrationRisk) * 0.1 +
+        (100 - profile.factors.geopoliticalRisk) * 0.06,
+      0,
+      100,
+    ),
+  )
 }
 
 const capabilityAdjustment = (
@@ -277,8 +371,9 @@ const portfolioAdjacencyAdjustment = (
 const scoreBucket = (
   score: number,
   strategy: Strategy,
+  dealSize: DealSize,
 ): ScoredCountry['recommendation'] => {
-  const threshold = strategyRecommendationThresholds[strategy]
+  const threshold = strategyRecommendationThresholds[strategy][dealSize]
 
   if (score >= threshold.veryStrongMin) {
     return 'Very strong'
@@ -308,7 +403,7 @@ export const scoreCountry = (
   portfolioAdjacency?: PortfolioAdjacencyInputs,
 ): ScoredCountry => {
   const sectorScore = profile.sectorFit[sector] ?? 0
-  const effectiveWeights = getEffectiveFactorWeights(strategy, dealSize)
+  const effectiveWeights = getEffectiveFactorWeights(strategy, dealSize, sector)
   const weightedFactorScore = effectiveWeights.reduce((acc, factor) => {
     const raw = profile.factors[factor.key]
     const directional = factor.invert ? 100 - raw : raw
@@ -368,6 +463,7 @@ export const scoreCountry = (
   }
 
   const sizeAdjustment = dealSizeAdjustment(profile, dealSize)
+  const deployabilityScore = deployabilityScoreForDealSize(profile, dealSize)
   const adjacencyAdjustment = portfolioAdjacencyAdjustment(profile, sector, portfolioAdjacency)
   const scenarioScore = clamp(scenarios[scenarioCase] + sizeAdjustment + adjacencyAdjustment, 0, 100)
 
@@ -376,10 +472,11 @@ export const scoreCountry = (
     sectorScore,
     weightedFactorScore: Math.round(weightedFactorScore),
     overallScore,
-    recommendation: scoreBucket(overallScore, strategy),
+    recommendation: scoreBucket(overallScore, strategy, dealSize),
     scenarioScore,
-    scenarioRecommendation: scoreBucket(scenarioScore, strategy),
+    scenarioRecommendation: scoreBucket(scenarioScore, strategy, dealSize),
     dealSizeAdjustment: sizeAdjustment,
+    deployabilityScore,
     portfolioAdjacencyAdjustment: adjacencyAdjustment,
     scenarios: {
       base: scenarios.base,
