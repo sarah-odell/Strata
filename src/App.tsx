@@ -40,6 +40,8 @@ const capabilityOptions: { label: string; value: PortfolioCapability }[] = [
   { label: 'Digital Go-To-Market', value: 'digitalGoToMarket' },
   { label: 'Supply Chain Operations', value: 'supplyChainOperations' },
 ]
+const capabilityLabel = (capability: PortfolioCapability): string =>
+  capabilityOptions.find((item) => item.value === capability)?.label ?? capability
 
 type PromptAssumptions = {
   strategy: Strategy
@@ -47,6 +49,12 @@ type PromptAssumptions = {
   scenarioCase: ScenarioCase
   dealSize: DealSize
   targetCountryCode: string | null
+}
+
+type InferredAdjacency = {
+  sectors: string[]
+  regions: string[]
+  capabilities: PortfolioCapability[]
 }
 
 type ResearchVerdict = {
@@ -296,6 +304,110 @@ const inferTargetCountry = (prompt: string): string | null => {
   }
 
   return null
+}
+
+const regionAliasMap: Record<string, string> = {
+  'north america': 'North America',
+  na: 'North America',
+  usa: 'North America',
+  us: 'North America',
+  canada: 'North America',
+  mexico: 'North America',
+  europe: 'Europe',
+  emea: 'Europe',
+  eu: 'Europe',
+  uk: 'Europe',
+  germany: 'Europe',
+  france: 'Europe',
+  netherlands: 'Europe',
+  'asia pacific': 'Asia-Pacific',
+  apac: 'Asia-Pacific',
+  asia: 'Asia-Pacific',
+  japan: 'Asia-Pacific',
+  korea: 'Asia-Pacific',
+  'south korea': 'Asia-Pacific',
+  india: 'Asia-Pacific',
+  australia: 'Asia-Pacific',
+  singapore: 'Asia-Pacific',
+  'middle east': 'Middle East',
+  mea: 'Middle East',
+  gulf: 'Middle East',
+  uae: 'Middle East',
+  'saudi arabia': 'Middle East',
+  'latin america': 'Latin America',
+  latam: 'Latin America',
+  brazil: 'Latin America',
+  colombia: 'Latin America',
+  chile: 'Latin America',
+  africa: 'Africa',
+  kenya: 'Africa',
+  nigeria: 'Africa',
+  egypt: 'Africa',
+  'south africa': 'Africa',
+}
+
+const inferAdjacencyFromPrompt = (prompt: string): InferredAdjacency => {
+  const normalized = prompt.toLowerCase()
+  const inferredSectors = supportedSectors.filter((candidate) => {
+    const token = candidate.toLowerCase()
+    return normalized.includes(token) || normalized.includes(token.replace(' & ', ' and '))
+  })
+
+  const regionSet = new Set<string>()
+  const aliasEntries = Object.entries(regionAliasMap).sort((a, b) => b[0].length - a[0].length)
+  for (const [alias, region] of aliasEntries) {
+    const escaped = alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const pattern = new RegExp(`\\b${escaped}\\b`, 'i')
+    if (pattern.test(normalized)) {
+      regionSet.add(region)
+    }
+  }
+
+  const mentionedCountryRegions = countryProfiles
+    .filter((profile) => {
+      const escapedName = profile.name.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      return new RegExp(`\\b${escapedName}\\b`, 'i').test(normalized) || new RegExp(`\\b${profile.code.toLowerCase()}\\b`, 'i').test(normalized)
+    })
+    .map((profile) => profile.region)
+  for (const region of mentionedCountryRegions) {
+    regionSet.add(region)
+  }
+
+  const inferredCapabilities: PortfolioCapability[] = []
+  const capabilitySignals: { capability: PortfolioCapability; patterns: string[] }[] = [
+    {
+      capability: 'regulatoryOperations',
+      patterns: ['regulatory', 'compliance', 'licensing', 'license', 'permitting'],
+    },
+    {
+      capability: 'integrationPlaybook',
+      patterns: ['integration', 'carve-out', 'carve out', 'post-merger', 'post merger', 'pmi'],
+    },
+    {
+      capability: 'governmentRelations',
+      patterns: ['government', 'public sector', 'policy', 'regulator', 'regulators'],
+    },
+    {
+      capability: 'digitalGoToMarket',
+      patterns: ['digital', 'go-to-market', 'go to market', 'gtm', 'online', 'ecommerce'],
+    },
+    {
+      capability: 'supplyChainOperations',
+      patterns: ['supply chain', 'logistics', 'procurement', 'distribution', 'fulfillment'],
+    },
+  ]
+
+  for (const signal of capabilitySignals) {
+    if (signal.patterns.some((pattern) => normalized.includes(pattern))) {
+      inferredCapabilities.push(signal.capability)
+    }
+  }
+
+  return {
+    sectors: inferredSectors,
+    regions: Array.from(regionSet),
+    capabilities: inferredCapabilities,
+  }
 }
 
 const inferAssumptions = (
@@ -571,6 +683,10 @@ function App() {
     () => inferAssumptions(dealPrompt, fundSizeInput, { strategy, sector, scenarioCase, dealSize }),
     [dealPrompt, fundSizeInput, strategy, sector, scenarioCase, dealSize],
   )
+  const inferredAdjacency = useMemo(
+    () => inferAdjacencyFromPrompt(dealPrompt),
+    [dealPrompt],
+  )
   const tailoredRanked = useMemo(
     () =>
       rankCountries(
@@ -761,10 +877,14 @@ function App() {
       scenarioCase,
       dealSize,
     })
+    const inferredAdjacency = inferAdjacencyFromPrompt(nextPrompt)
     setStrategy(inferred.strategy)
     setSector(inferred.sector)
     setScenarioCase(inferred.scenarioCase)
     setDealSize(inferred.dealSize)
+    setPortfolioSectors(inferredAdjacency.sectors)
+    setPortfolioRegions(inferredAdjacency.regions)
+    setPortfolioCapabilities(inferredAdjacency.capabilities)
   }
 
   const saveBackendUrl = () => {
@@ -1275,6 +1395,13 @@ function App() {
               <span>Sector: {promptAssumptions.sector}</span>
               <span>Scenario: {scenarioLabel[promptAssumptions.scenarioCase]}</span>
               <span>Deal size: {dealSizeOptions.find((option) => option.value === promptAssumptions.dealSize)?.label}</span>
+              <span>Adj sectors: {inferredAdjacency.sectors.length > 0 ? inferredAdjacency.sectors.join(', ') : 'None inferred'}</span>
+              <span>Adj regions: {inferredAdjacency.regions.length > 0 ? inferredAdjacency.regions.join(', ') : 'None inferred'}</span>
+              <span>
+                Adj capabilities: {inferredAdjacency.capabilities.length > 0
+                  ? inferredAdjacency.capabilities.map((capability) => capabilityLabel(capability)).join(', ')
+                  : 'None inferred'}
+              </span>
               <span>Prompt inference mode: {autoApplyPromptInference ? 'Auto-apply' : 'Manual apply'}</span>
               {targetCountryProfile ? <span>Target country detected: {targetCountryProfile.name}</span> : null}
             </div>
