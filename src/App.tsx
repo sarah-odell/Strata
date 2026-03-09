@@ -1034,28 +1034,6 @@ function App() {
       {viewMode === 'radar' ? (
         <>
           <section className="toolbar">
-            <label>
-              Deal strategy
-              <select value={strategy} onChange={(event) => setStrategy(event.target.value as Strategy)}>
-                {strategies.map((choice) => (
-                  <option key={choice} value={choice}>
-                    {choice}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              Sector focus
-              <select value={sector} onChange={(event) => setSector(event.target.value)}>
-                {supportedSectors.map((choice) => (
-                  <option key={choice} value={choice}>
-                    {choice}
-                  </option>
-                ))}
-              </select>
-            </label>
-
             <div className="toolbar-toggles">
               {scenarioOptions.map((scenario) => (
                 <button
@@ -1331,6 +1309,30 @@ function App() {
         </>
       ) : viewMode === 'dealLab' ? (
         <>
+          <section className="toolbar">
+            <label>
+              Deal strategy
+              <select value={strategy} onChange={(event) => setStrategy(event.target.value as Strategy)}>
+                {strategies.map((choice) => (
+                  <option key={choice} value={choice}>
+                    {choice}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              Sector focus
+              <select value={sector} onChange={(event) => setSector(event.target.value)}>
+                {supportedSectors.map((choice) => (
+                  <option key={choice} value={choice}>
+                    {choice}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </section>
+
           <section className="adjacency-panel">
             <p className="weights-title">Portfolio Adjacency Inputs</p>
             <p className="prompt-subtitle">
