@@ -968,6 +968,12 @@ li:first-child {
   color: var(--text-tertiary);
 }
 
+.radar-note {
+  margin-top: 0.5rem;
+  font-size: 0.6875rem;
+  color: var(--text-tertiary);
+}
+
 /* --- Definitions --- */
 
 .definitions-panel {
