@@ -348,10 +348,36 @@ const regionAliasMap: Record<string, string> = {
 
 const inferAdjacencyFromPrompt = (prompt: string): InferredAdjacency => {
   const normalized = prompt.toLowerCase()
-  const inferredSectors = supportedSectors.filter((candidate) => {
+  const inferredSectorSet = new Set<string>()
+
+  const exactMatchSectors = supportedSectors.filter((candidate) => {
     const token = candidate.toLowerCase()
     return normalized.includes(token) || normalized.includes(token.replace(' & ', ' and '))
   })
+  for (const sector of exactMatchSectors) {
+    inferredSectorSet.add(sector)
+  }
+
+  const sectorSignals: Array<{ sector: string; patterns: string[] }> = [
+    { sector: 'Professional Services', patterns: ['professional services', 'consulting', 'advisory', 'services roll-up', 'services roll up'] },
+    { sector: 'Healthcare Services', patterns: ['healthcare', 'health care', 'provider', 'clinic', 'care delivery'] },
+    { sector: 'Industrial Technology', patterns: ['industrial', 'manufacturing', 'automation', 'process tech'] },
+    { sector: 'Aerospace & Defense', patterns: ['aerospace', 'defense', 'a&d', 'defence', 'military'] },
+    { sector: 'Software & Data Services', patterns: ['software', 'saas', 'data services', 'data platform', 'analytics'] },
+    { sector: 'Financial Services', patterns: ['financial services', 'fintech', 'banking', 'insurance', 'payments'] },
+    { sector: 'Energy & Infrastructure', patterns: ['energy', 'power', 'infrastructure', 'utilities', 'grid'] },
+    { sector: 'Consumer & Retail', patterns: ['consumer', 'retail', 'ecommerce', 'e-commerce', 'brand'] },
+    { sector: 'Logistics & Transportation', patterns: ['logistics', 'transportation', 'transport', 'supply chain', 'freight'] },
+    { sector: 'Education & Training', patterns: ['education', 'training', 'edtech', 'upskilling'] },
+    { sector: 'Real Estate & Built Environment', patterns: ['real estate', 'property', 'built environment', 'construction services'] },
+    { sector: 'Food & Agriculture', patterns: ['food', 'agriculture', 'agri', 'agribusiness', 'farming'] },
+  ]
+
+  for (const signal of sectorSignals) {
+    if (signal.patterns.some((pattern) => normalized.includes(pattern))) {
+      inferredSectorSet.add(signal.sector)
+    }
+  }
 
   const regionSet = new Set<string>()
   const aliasEntries = Object.entries(regionAliasMap).sort((a, b) => b[0].length - a[0].length)
@@ -404,7 +430,7 @@ const inferAdjacencyFromPrompt = (prompt: string): InferredAdjacency => {
   }
 
   return {
-    sectors: inferredSectors,
+    sectors: Array.from(inferredSectorSet),
     regions: Array.from(regionSet),
     capabilities: inferredCapabilities,
   }
