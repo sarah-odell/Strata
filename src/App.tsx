@@ -1045,19 +1045,6 @@ function App() {
                   {scenario.label}
                 </button>
               ))}
-
-              <span className="toolbar-divider" />
-
-              {dealSizeOptions.map((sizeOption) => (
-                <button
-                  key={sizeOption.value}
-                  type="button"
-                  className={dealSize === sizeOption.value ? 'scenario-btn active' : 'scenario-btn'}
-                  onClick={() => setDealSize(sizeOption.value)}
-                >
-                  {sizeOption.label}
-                </button>
-              ))}
             </div>
           </section>
 
@@ -1331,6 +1318,19 @@ function App() {
                 ))}
               </select>
             </label>
+
+            <div className="toolbar-toggles">
+              {dealSizeOptions.map((sizeOption) => (
+                <button
+                  key={sizeOption.value}
+                  type="button"
+                  className={dealSize === sizeOption.value ? 'scenario-btn active' : 'scenario-btn'}
+                  onClick={() => setDealSize(sizeOption.value)}
+                >
+                  {sizeOption.label}
+                </button>
+              ))}
+            </div>
           </section>
 
           <section className="adjacency-panel">
